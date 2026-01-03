@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<meviews:ContentDialog xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+                   xmlns:meviews="clr-namespace:cw.MauiExtensions.Services.Views;assembly=cw.MauiExtensions.Services"
+                   x:DataType="vm:MyPopupViewModel"
+                   x:Class="cw.MauiExtensions.Services.Demo.Views.MyPopup">
+  <meviews:ContentDialog.ContentView>
+    <Border Margin="32,0,32,0"
+            x:Name="PopupBorder"
+            Style="{StaticResource ContentDialogBorder}">
+      <!--Content-->
+      <StackLayout Padding="10,0,10,0"
+                   Spacing="0"
+                   MaximumWidthRequest="360">
+        <Label Text="This is a Popup / ContentDialog"
+               FontSize="Title"
+               LineBreakMode="WordWrap" />
+        <Label Margin="0,18,0,0"
+               Text="ContentDialog provides a fully flexible popup container for .NET MAUI."
+               FontSize="Medium"
+               LineBreakMode="WordWrap" />
+        <Label Text="It allows you to compose dialogs using any MAUI control, including labels, buttons, checkboxes, switches, dropdowns, lists, and custom views."
+               LineBreakMode="WordWrap" />
+        <Label Text="The dialog does not impose a fixed layout or content model, giving you full control over structure, behavior, and interaction."
+               LineBreakMode="WordWrap" />
+        <Grid Margin="0,25,0,0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="24">
+          <Label Grid.Column="0"
+                 Text="I agree with the conditions"
+                 VerticalOptions="Center"/>
+          <CheckBox Grid.Column="1"
+                    IsChecked="{Binding IsChecked, Mode=TwoWay}"/>
+        </Grid>
+        <Grid Margin="0,24,0,0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="24">
+          <Button Grid.Column="0"
+                  Text="Save"
+                  Clicked="OnSaveButtonClicked"
+                  HorizontalOptions="End"
+                  Style="{StaticResource TextOnlyButton}"/>
+          <Button Grid.Column="1"
+                  Text="Cancel"
+                  FontAttributes="None"
+                  Clicked="OnCancelButtonClicked"
+                  Style="{StaticResource TextOnlyButton}"/>
+        </Grid>
+      </StackLayout>
+    </Border>
+  </meviews:ContentDialog.ContentView>
+</meviews:ContentDialog>

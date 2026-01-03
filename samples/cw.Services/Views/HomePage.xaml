@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+             x:Class="cw.MauiExtensions.Services.Demo.Views.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="Demo"
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Settings" Order="Primary" IconImageSource="{AppThemeBinding Light=settings_24dp.png, Dark=settings_24dp_dark.png}" Command="{Binding OpenNonModalPageCommand}"/>
+  </ContentPage.ToolbarItems>
+
+  <VerticalStackLayout Padding="18"
+                       Spacing="25">
+    <Label Text="Demo page to show a non-modal page, a modal page, a content dialog and an alert using MauiExtension.Services. The last button opens a Popup view using the Maui CommunityToolkit."
+           FontSize="Medium"
+           LineBreakMode="WordWrap"
+           VerticalOptions="Center" 
+           HorizontalOptions="Center" />
+    <Button Text="Open NonModal Page"
+            Command="{Binding OpenNonModalPageCommand}" />
+    <Button Text="Open Modal Page"
+            Command="{Binding OpenModalPageCommand}" />
+    <Button Text="Show Content Dialog"
+            Command="{Binding OpenContentDialogCommand}" />
+    <Button Text="Show Alert"
+            Command="{Binding ShowAlertCommand}" />
+    <Button Text="Show Community Toolkit Popup"
+            Clicked="OnShowCommunityToolkitPopupButtonClicked"/>
+  </VerticalStackLayout>
+</ContentPage>

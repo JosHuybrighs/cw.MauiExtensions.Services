@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cw.MauiExtensions.Services", "src\cw.MauiExtensions.Services\cw.MauiExtensions.Services.csproj", "{CFE09535-F288-183D-1693-1392BA5B49E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E61B3756-7998-4994-996A-EE45DFE8EBC0}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cw.MauiExtensions.Services.Demo", "samples\cw.Services\cw.MauiExtensions.Services.Demo.csproj", "{B768725E-9C96-56AC-03C5-1BA0DC94E997}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CFE09535-F288-183D-1693-1392BA5B49E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFE09535-F288-183D-1693-1392BA5B49E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFE09535-F288-183D-1693-1392BA5B49E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFE09535-F288-183D-1693-1392BA5B49E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B768725E-9C96-56AC-03C5-1BA0DC94E997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B768725E-9C96-56AC-03C5-1BA0DC94E997}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B768725E-9C96-56AC-03C5-1BA0DC94E997}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B768725E-9C96-56AC-03C5-1BA0DC94E997}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B768725E-9C96-56AC-03C5-1BA0DC94E997}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {07471FCE-07C0-4B38-BE36-CE123D51D6A9}
+	EndGlobalSection
+EndGlobal

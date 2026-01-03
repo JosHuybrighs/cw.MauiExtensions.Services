@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+             x:Class="MauiExtensions.Demo.Views.ModalPage"
+             x:DataType="vm:ModalViewModel"
+             Title="ModalPage"
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
+    <VerticalStackLayout Padding="18,0,18,0"
+                         Spacing="25">
+    <Button Text="X"
+            Command="{Binding CloseModalCommand}"/>
+    <Label Text="This is a modal page. Tap X to close."
+           FontSize="Medium" />
+  </VerticalStackLayout>
+</ContentPage>

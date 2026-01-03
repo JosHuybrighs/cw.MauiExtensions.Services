@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="cw.MauiExtensions.Services.Demo.Views.NonModalPage"
+             Title="NonModalPage"
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
+    <VerticalStackLayout Padding="18">
+        <Label Text="This is a non-modal page on the navigation stack."
+               VerticalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>

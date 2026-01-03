@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<meviews:ContentDialog xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:meviews="clr-namespace:cw.MauiExtensions.Services.Views;assembly=cw.MauiExtensions.Services"
+                       x:Class="cw.MauiExtensions.Services.Views.AlertDialog"
+                       Title="AlertDialog">
+  <meviews:ContentDialog.ContentView>
+    <Border x:Name="DialogBorder"
+            WidthRequest="300"
+            Padding="10,10,16,10">
+      <VerticalStackLayout>
+        <Label x:Name="TitleLabel"
+               Margin="12,0,12,0"
+               FontSize="Medium"/>
+        <Label x:Name="TextLabel"
+               Margin="12,12,12,0"
+               FontSize="15"/>
+        <Grid Margin="0,24,0,0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="24">
+          <Button Grid.Column="0"
+                  x:Name="PrimaryBttn"
+                  Clicked="PrimaryBttn_Clicked"
+                  FontAttributes="Bold"
+                  HorizontalOptions="End"/>
+          <Button Grid.Column="1"
+                  x:Name="SecondaryBttn"
+                  Clicked="SecondaryBttn_Clicked"
+                  FontAttributes="None"/>
+        </Grid>
+      </VerticalStackLayout>
+    </Border>
+  </meviews:ContentDialog.ContentView>
+</meviews:ContentDialog>

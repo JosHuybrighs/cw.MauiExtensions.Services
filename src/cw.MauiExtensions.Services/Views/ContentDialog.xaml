@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="cw.MauiExtensions.Services.Views.ContentDialog"
+             Title="ContentDialog">
+  <Grid x:Name="BackgroundGrid">
+
+    <Grid.GestureRecognizers>
+      <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"
+                            NumberOfTapsRequired="1"/>
+    </Grid.GestureRecognizers>
+
+    <ContentView x:Name="ContentContainer"
+                 HorizontalOptions="Center" 
+                 VerticalOptions="Center"
+                 InputTransparent="False">
+      <ContentView.GestureRecognizers>
+        <TapGestureRecognizer Tapped="ContentContainerTapped"
+                              NumberOfTapsRequired="1"/>
+      </ContentView.GestureRecognizers>
+    </ContentView>
+
+  </Grid>
+</ContentPage>
