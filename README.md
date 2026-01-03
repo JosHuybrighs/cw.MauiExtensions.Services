@@ -2,6 +2,16 @@
 
 A reusable .NET MAUI library providing navigation services, popups, alert dialogs, ViewModel lifecycle management, and proper Android
 system bar handling.
+### Features
+
+This library provides:
+- **PageNavigationService**: Create a main page, open and close non-modal and modal pages
+- **ViewModel Lifecycle Management**: Automatic lifecycle event notifications and disposal
+- **ContentDialog**: Overlay-style modal dialogs with semi-transparent backgrounds
+- **AlertDialog**: Standard alert/confirmation dialogs
+- **Smart Android Status Bar Handling**: Automatically configures status bar colors for different modal page types
+- **Page Removal Events**: Subscribe to page removal notifications via events or WeakReferenceMessenger
+
 
 ## 1. Android System Bars coloring
 
@@ -149,17 +159,8 @@ PageRemoved event raised
 
 For detailed examples and best practices, see the [Page Lifecycle Management Guide](Docs/PageLifecycleManagement.md).
 
-## Features
 
-This library provides:
-- **PageNavigationService**: Create a main page, open and close non-modal and modal pages
-- **ViewModel Lifecycle Management**: Automatic lifecycle event notifications and disposal
-- **ContentDialog**: Overlay-style modal dialogs with semi-transparent backgrounds
-- **AlertDialog**: Standard alert/confirmation dialogs
-- **Smart Android Status Bar Handling**: Automatically configures status bar colors for different modal page types
-- **Page Removal Events**: Subscribe to page removal notifications via events or WeakReferenceMessenger
-
-## Installation
+## 3. Installation
 
 1. Add a reference to the `cw.MauiExtensions.Services` project in your MAUI application.
 
