@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="cw.MauiExtensions.Services.Demo.Views.Tab1Page"
+             Title="Home"
+             IconImageSource="home.png"
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
+    
+    <VerticalStackLayout Padding="30"
+                         Spacing="25">
+        <Image Source="lib_image.png"
+               Aspect="AspectFit" />
+        
+        <Label Text="Welcome to Tab 1"
+               Style="{StaticResource Headline}"
+               SemanticProperties.HeadingLevel="Level1" />
+        
+        <Label Text="This is the first tab of the TabbedPage demo."
+               FontSize="18"
+               HorizontalOptions="Center"
+               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+        
+        <Label Text="You can swipe left/right to switch between tabs, or tap the tab headers."
+               FontSize="14"
+               LineBreakMode="WordWrap"
+               HorizontalOptions="Center"
+               HorizontalTextAlignment="Center"
+               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+    </VerticalStackLayout>
+    
+</ContentPage>

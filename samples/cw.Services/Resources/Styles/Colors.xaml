@@ -8,17 +8,19 @@
 
   <!--**********************************************************************-->
   <!-- Default colors in cw.MauiExtensions.Services-->
-  <!-- 1. System colors for status and navigation bars-->
-  <Color x:Key="SystemBarsBackground">#FFFFFF</Color>
-  <Color x:Key="SystemBarsBackgroundDark">#000000</Color>
-  <!-- 2. Page and NavigationBar colors-->
-  <Color x:Key="PageBackground">#FFFFFF</Color>
-  <Color x:Key="PageBackgroundDark">#000000</Color>
-  <Color x:Key="NavigationBarBackground">#FFFFFF</Color>
-  <Color x:Key="NavigationBarBackgroundDark">#000000</Color>
-  <Color x:Key="NavigationBarText">#101010</Color>
-  <Color x:Key="NavigationBarTextDark">#FFFFFF</Color>
-  <!-- 3. ContentDialog (Popup) overlay colors-->
+  <!-- 1. System colors for ystem bars (status and navigation bars on Android, title bar on windows-->
+  <Color x:Key="SystemBarsBackground">#F0F0F0</Color>
+  <Color x:Key="SystemBarsBackgroundDark">#202020</Color>
+  <!-- 2. Page and MAUI toolbar/navigationbar colors-->
+  <!--<Color x:Key="PageBackground">#EEEDF4</Color>-->
+  <Color x:Key="PageBackground">#F0F0F0</Color>
+  <Color x:Key="PageBackgroundDark">#202020</Color>
+  <!-- 3. Navigation bar colors (page title and toolbar items)-->
+  <Color x:Key="NavigationBarBackground">#F0F0F0</Color>
+  <Color x:Key="NavigationBarBackgroundDark">#202020</Color>
+  <Color x:Key="NavigationBarText">#202020</Color>
+  <Color x:Key="NavigationBarTextDark">#F0F0F0</Color>
+  <!-- 4. ContentDialog (Popup) overlay colors-->
   <Color x:Key="ContentDialogBackgroundOverlay">#4C000000</Color>
   <Color x:Key="ContentDialogBackgroundOverlayDark">#80000000</Color>
   <!--**********************************************************************-->
@@ -28,6 +30,12 @@
   <Color x:Key="ContentDialogBorderBackgroundDark">#202020</Color>
   <Color x:Key="ContentDialogBorderStroke">#E0E0E0</Color>
   <Color x:Key="ContentDialogBorderStrokeDark">#3D3D3D</Color>
+
+  <Color x:Key="TabBarBackground">#F0F0F0</Color>
+  <Color x:Key="TabBarBackgroundDark">#202020</Color>
+  <Color x:Key="TabBarText">#005FB8</Color>
+  <Color x:Key="TabBarTextDark">#60CDFF</Color>
+
 
 
   <Color x:Key="Primary">#005FB8</Color>
@@ -47,8 +55,8 @@
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
+  <Color x:Key="Gray200">#C8C8C8</Color>
+  <Color x:Key="Gray300">#ACACAC</Color>
     <Color x:Key="Gray400">#919191</Color>
     <Color x:Key="Gray500">#6E6E6E</Color>
     <Color x:Key="Gray600">#404040</Color>

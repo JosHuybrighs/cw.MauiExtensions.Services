@@ -15,14 +15,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         async Task OpenNonModalPage()
         {
             // Navigate to a non-modal page
-            await PageNavigationService.Instance.OpenContentPageAsync(typeof(NonModalPage), new NonModalViewModel());
+            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel());
         }
 
         [RelayCommand]
         async Task OpenModalPage()
         {
             // Navigate to a non-modal page
-            await PageNavigationService.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
+            await PagePresentationService.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
         }
 
         [RelayCommand]
@@ -56,6 +56,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
                 // User clicked Cancel or closed the dialog
             }
         }
+
+
+        [RelayCommand]
+        async Task OpenTabbedPage()
+        {
+            PagePresentationService.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
+        }
+
 
         public void OnNavigatedTo()
         {

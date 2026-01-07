@@ -4,7 +4,7 @@ This document explains how to use the page lifecycle interfaces in the cw.MauiEx
 
 ## Overview
 
-The `PageNavigationService` automatically manages ViewModel lifecycle by hooking into MAUI page events. ViewModels can implement one or both of the following interfaces:
+The `PagePresentationService` automatically manages ViewModel lifecycle by hooking into MAUI page events. ViewModels can implement one or both of the following interfaces:
 
 1. **`IPageLifecycleAware`**: Receive notifications when pages appear/disappear
 2. **`IAutoDisposableOnViewClosed`**: Automatically dispose resources when page is removed
@@ -57,7 +57,7 @@ public interface IAutoDisposableOnViewClosed : IDisposable
 ```
 Page Created
     ?
-PageNavigationService hooks Page.Appearing & Page.Disappearing
+PagePresentationService hooks Page.Appearing & Page.Disappearing
     ?
 Page.Appearing ? ViewModel.OnNavigatedTo() (if IPageLifecycleAware)
     ?
@@ -392,7 +392,7 @@ public void OnNavigatedFrom()
 
 ## Memory Leak Prevention
 
-The `PageNavigationService` automatically:
+The `PagePresentationService` automatically:
 - ? Unhooks page events when page is removed
 - ? Calls `Dispose()` on ViewModels implementing `IAutoDisposableOnViewClosed`
 - ? Raises `PageRemoved` event for additional cleanup
@@ -413,7 +413,7 @@ You should:
 ### Dispose not called
 - Ensure ViewModel implements `IAutoDisposableOnViewClosed`
 - Check that page is actually being removed (not just hidden)
-- Verify `PageNavigationService` is managing the navigation
+- Verify `PagePresentationService` is managing the navigation
 
 ### Multiple OnNavigatedTo calls
 - `OnNavigatedTo()` is called every time the page appears

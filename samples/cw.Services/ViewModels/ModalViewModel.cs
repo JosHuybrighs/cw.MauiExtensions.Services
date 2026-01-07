@@ -12,7 +12,7 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         async Task CloseModal()
         {
             // Close the modal page
-            await PageNavigationService.Instance.CloseModalPageAsync();
+            await PagePresentationService.Instance.CloseModalPageAsync();
         }
 
         public void Dispose()

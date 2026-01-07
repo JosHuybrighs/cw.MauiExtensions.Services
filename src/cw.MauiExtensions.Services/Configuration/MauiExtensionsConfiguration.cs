@@ -62,83 +62,66 @@ namespace cw.MauiExtensions.Services.Configuration
         public string PageBackgroundDarkColor { get; set; } = "PageBackgroundDark";
 
         /// <summary>
-        /// Gets or sets the background color in light mode used for the Maui NavigationBar.
+        /// Gets or sets the background color in light mode used for the Maui NavigationBar (back button bar).
         /// </summary>
-        /// <remarks>The default expected key is "MauiNavigationBarBackgroundColor".</remarks>
-        public string MauiNavigationBarBackgroundColor { get; set; } = "PageBackground";
+        /// <remarks>The default expected key is "NavigationBarBackground".</remarks>
+        public string NavigationBarBackgroundColor { get; set; } = "NavigationBarBackground";
 
         /// <summary>
-        /// Gets or sets the background color in dark mode used for the Maui NavigationBar.
+        /// Gets or sets the background color in dark mode used for the Maui NavigationBar (back button bar).
         /// </summary>
-        /// <remarks>The default expected key is "PageBackgroundDark".</remarks>
-        public string MauiNavigationBarBackgroundDarkColor { get; set; } = "PageBackgroundDark";
+        /// <remarks>The default expected key is "NavigationBarBackgroundDark".</remarks>
+        public string NavigationBarBackgroundDarkColor { get; set; } = "NavigationBarBackgroundDark";
 
         /// <summary>
-        /// Gets or sets the background color in light mode used for text in Maui NavigationBar.
+        /// Gets or sets the text color in light mode used for the Maui NavigationBar (back button bar).
         /// </summary>
         /// <remarks>The default expected key is "NavigationBarText".</remarks>
-        public string MauiNavigationBarTextColor { get; set; } = "NavigationBarText";
+        public string NavigationBarTextColor { get; set; } = "NavigationBarText";
 
         /// <summary>
-        /// Gets or sets the background color in dark mode used for text in Maui NavigationBar.
+        /// Gets or sets the text color in dark mode used for the Maui NavigationBar (back button bar).
         /// </summary>
         /// <remarks>The default expected key is "NavigationBarTextDark".</remarks>
-        public string MauiNavigationBarTextDarkColor { get; set; } = "NavigationBarTextDark";
+        public string NavigationBarTextDarkColor { get; set; } = "NavigationBarTextDark";
     }
 
 
     public class MauiExtensionsConfiguration
     {
-        private Func<Style>? _alertDialogBorderStyleProvider;
-        private Func<Style>? _alertDialogButtonStyleProvider;
+        //private Func<Style>? _alertDialogBorderStyleProvider;
+        //private Func<Style>? _alertDialogButtonStyleProvider;
 
-        private Style? _alertDialogBorderStyle;
-        private Style? _alertDialogButtonStyle;
+        //private Style? _alertDialogBorderStyle;
+        //private Style? _alertDialogButtonStyle;
 
         /// <summary>
         /// Property holding all resource keys used by the cw.MauiExtensions.Services library.
         /// </summary>
         public MauiExtensionsResourceKeys ResourceKeys { get; set; } = new();
 
-        /*
-        /// <summary>
-        /// Gets or sets the default style for AlertDialogs.
-        /// If not set, the library will use its built-in default style.
-        /// </summary>
-        public Style? AlertDialogBorderStyle
-        {
-            get => _alertDialogBorderStyle ?? _alertDialogBorderStyleProvider?.Invoke();
-            set => _alertDialogBorderStyle = value;
-        }
+        public bool DrawUnderSystemBars { get; set; } = true;
+        public bool AppHasNavigationBar { get; set; } = true;
+
 
         /// <summary>
-        /// Gets or sets the default style for the buttons in AlertDialog.
-        /// If not set, the library will use its built-in default style.
+        /// Gets or sets a value indicating whether to enable smart handling of system bar colors with modal pages.
         /// </summary>
-        public Style? AlertDialogButtonStyle
-        {
-            get => _alertDialogButtonStyle ?? _alertDialogButtonStyleProvider?.Invoke();
-            set => _alertDialogButtonStyle = value;
-        }
+        /// <remarks>The default is true meaning that the library provides full support for setting a correct color and
+        /// tint on system bars, like the status and navigation bars, when showing modal pages and Popups.
+        /// When set to false the library will NOT be responsible for setting the right colors for system bars. It is
+        /// expected that other libraries like CommunityToolkit.Maui takes care of this.</remarks>
+        public bool UseSmartSystemBarColoringWithModals { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the background overlay color for ContentDialog (used when the dialog is displayed).
-        /// If not set, the library will automatically derive the color from the underlying page background.
+        /// Gets or sets a value indicating whether smart coloring is applied to system bars based on the current theme
+        /// or content.
         /// </summary>
-        public Color? ContentDialogBackgroundOverlayColor
-        {
-            get => _contentDialogBackgroundOverlayColor ?? _contentDialogBackgroundOverlayColorProvider?.Invoke();
-            set => _contentDialogBackgroundOverlayColor = value;
-        }
-        */
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to enable integration with CommunityToolkit.Maui features.
-        /// </summary>
-        /// <remarks>The default is false meaning that the library provides full support for modal pages and Popups.
-        /// When set to true the library will NOT be responsible for setting the right colors for system bars, like
-        /// the status and navigation bars. It is expected that the CommunityToolkit.Maui library takes care of this.</remarks>
-        public bool UseCommunityToolkitMaui { get; set; } = false;
+        /// <remarks>When enabled, the system bar colors automatically adjust to improve visibility and
+        /// match the application's appearance. Disabling this property may result in less optimal contrast or
+        /// integration with the system UI. To overcome this you can use CommunityToolkit.Maui and add
+        /// toolkit:StatusBarBehavior to your startup page. This works well for android API 35+ but not for lower versions.</remarks>
+        public bool UseSmartSystemBarColoring { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether the library's status bar styling is applied.
@@ -156,38 +139,7 @@ namespace cw.MauiExtensions.Services.Configuration
         /// Set to <see langword="false"/> to not apply any styling within the library.</remarks>
         public bool UseSystemNavigationBarStyling { get; set; } = true;
 
-        /*
-        /// <summary>
-        /// Sets a provider function that will be called to get the AlertDialogBorderStyle when needed.
-        /// This allows you to access Application.Current.Resources after the app is initialized.
-        /// </summary>
-        public void SetAlertDialogBorderStyleProvider(Func<Style> provider)
-        {
-            _alertDialogBorderStyleProvider = provider;
-        }
 
-        /// <summary>
-        /// Sets a provider function that will be called to get the AlertDialogButtonStyle when needed.
-        /// This allows you to access Application.Current.Resources after the app is initialized.
-        /// </summary>
-        public void SetAlertDialogButtonStyleProvider(Func<Style> provider)
-        {
-            _alertDialogButtonStyleProvider = provider;
-        }
-
-        /// <summary>
-        /// Sets a provider function that will be called to get the ContentDialogBackgroundOverlayColor when needed.
-        /// This allows you to access Application.Current.Resources after the app is initialized.
-        /// </summary>
-        public void SetContentDialogBackgroundOverlayColorProvider(Func<Color> provider)
-        {
-            _contentDialogBackgroundOverlayColorProvider = provider;
-        }
-        */
-
-        /// <summary>
-        /// 
-        /// </summary>
         internal static MauiExtensionsConfiguration Instance { get; set; } = new();
     }
 }

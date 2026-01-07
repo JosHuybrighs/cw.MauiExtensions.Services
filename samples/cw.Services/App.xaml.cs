@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using cw.MauiExtensions.Services.Core;
+using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Events;
 using System.Diagnostics;
 
@@ -12,14 +13,15 @@ namespace cw.MauiExtensions.Services.Demo
             InitializeComponent();
             
             // Subscribe to PageRemoved event
-            PageNavigationService.Instance.PageRemoved += OnPageRemoved;
+            PagePresentationService.Instance.PageRemoved += OnPageRemoved;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
             // return new Window(new AppShell());
-            var navPage = PageNavigationService.Instance.OpenMainPage(typeof(Views.HomePage), new ViewModels.HomeViewModel());
-            return new Window(navPage);
+            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new ViewModels.HomeViewModel());
+            //var page = PagePresentationService.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
+            return new Window(page);
         }
 
         private void OnPageRemoved(object? sender, PageRemovedEventArgs e)

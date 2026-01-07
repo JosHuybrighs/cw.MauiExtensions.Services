@@ -10,7 +10,7 @@ public partial class HomePage : ContentPage
 	{
 		BindingContext = viewModel;
         InitializeComponent();
-	}
+    }
 
     private async void OnShowCommunityToolkitPopupButtonClicked(object sender, EventArgs e)
     {

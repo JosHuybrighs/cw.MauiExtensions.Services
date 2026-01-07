@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.OS;
+using Android.Views;
 using AndroidX.AppCompat.App;
 using cw.MauiExtensions.Services.Configuration;
 using cw.MauiExtensions.Services.Helpers;
@@ -112,82 +113,108 @@ namespace cw.MauiExtensions.Services.Platforms.Services
                 throw new InvalidOperationException("Dialog window cannot be null");
             }
 
-            // 1. Determine the platform color of the system bars based on modal mode (fullscreen or overlay),
-            //    theme (dark or light), and configured resource keys.
-            //    Get the MAUI page associated with this dialog fragment to check its modal mode.
-            var mauiPage = GetMauiPageFromFragment(dialogFragment);
-            var modalMode = mauiPage != null
-                ? ModalPageProperties.GetMode(mauiPage)
-                : ModalPageMode.FullScreen;
-
-            Android.Graphics.Color platformColor = new Android.Graphics.Color(activity.Window.StatusBarColor);
-
-            if (Microsoft.Maui.Controls.Application.Current?.Resources != null)
+            // 2. Tell android to allow the modal page to extend outside the default "safe zones" (margins) of
+            //    the screen. The overlay color of your popup will then physically extend to the top of the screen.
+            //    Window must be the one from dialogFragment.Dialog in order to work correctly with all
+            //    API's starting with API 26.
+            if (MauiExtensionsConfiguration.Instance.DrawUnderSystemBars)
             {
-                // Determine which color resource keys to use based on modal mode and theme
+                //dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+                //dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
                 bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
+                var mauiSystemBarColor = ResourcesHelper.GetColor(darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundDarkColor
+                                                                            : MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundColor,
+                                                                  darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
 
-                Microsoft.Maui.Graphics.Color mauiSystemBarColor;
+                bool isLightStatusBar = SystemBarsService.ShouldUseDarkIcons(mauiSystemBarColor);
 
-                if (modalMode == ModalPageMode.Overlay)
-                {
-                    // For overlay modals (popups/dialogs), calculate the modal-specific overlay color
-                    var mauiOverlayColor = ResourcesHelper.GetColor(
-                        darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.ContentDialogBackgroundOverlayDarkColor
-                                  : MauiExtensionsConfiguration.Instance.ResourceKeys.ContentDialogBackgroundOverlayColor,
-                        darkTheme ? Color.FromRgba(0, 0, 0, 0.5) : Color.FromRgba(0, 0, 0, 0.55));
-                    var mauiPageColor = ResourcesHelper.GetColor(
-                        darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.PageBackgroundDarkColor
-                                  : MauiExtensionsConfiguration.Instance.ResourceKeys.PageBackgroundColor,
-                        darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
-                    mauiSystemBarColor = Blend(mauiOverlayColor, mauiPageColor);
-                }
-                else
-                {
-                    // For full-screen modals, use the configured color for system bars
-                    mauiSystemBarColor = ResourcesHelper.GetColor(
-                        darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundDarkColor
-                                  : MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundColor,
-                        darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
-                }
-
-                platformColor = mauiSystemBarColor.ToPlatform();
+                SystemBarsService.EnableEdgeToEdge(dialogWindow, isLightStatusBar);
             }
             else
             {
-                // Can't access resources, use default behavior
-                if (platformColor == Android.Graphics.Color.Transparent)
+                // Determine the platform color of the system bars based on modal mode (fullscreen or overlay),
+                // theme (dark or light), and configured resource keys.
+                // Get the MAUI page associated with this dialog fragment to check its modal mode.
+                var mauiPage = GetMauiPageFromFragment(dialogFragment);
+                var modalMode = mauiPage != null
+                    ? ModalPageProperties.GetMode(mauiPage)
+                    : ModalPageMode.FullScreen;
+
+                Android.Graphics.Color platformColor = new Android.Graphics.Color(activity.Window.StatusBarColor);
+
+                if (Microsoft.Maui.Controls.Application.Current?.Resources != null)
                 {
-                    bool isDarkTheme = Microsoft.Maui.Controls.Application.Current?.RequestedTheme == AppTheme.Dark;
+                    // Determine which color resource keys to use based on modal mode and theme
+                    bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
+
+                    Microsoft.Maui.Graphics.Color mauiSystemBarColor;
+
                     if (modalMode == ModalPageMode.Overlay)
                     {
-                        platformColor = new Android.Graphics.Color(0, 0, 0, 128);  // Semi-transparent
+                        // For overlay modals (popups/dialogs), calculate the modal-specific overlay color
+                        var mauiOverlayColor = ResourcesHelper.GetColor(
+                            darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.ContentDialogBackgroundOverlayDarkColor
+                                      : MauiExtensionsConfiguration.Instance.ResourceKeys.ContentDialogBackgroundOverlayColor,
+                            darkTheme ? Color.FromRgba(0, 0, 0, 0.5) : Color.FromRgba(0, 0, 0, 0.55));
+                        var mauiPageColor = ResourcesHelper.GetColor(
+                            darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.PageBackgroundDarkColor
+                                      : MauiExtensionsConfiguration.Instance.ResourceKeys.PageBackgroundColor,
+                            darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
+                        mauiSystemBarColor = Blend(mauiOverlayColor, mauiPageColor);
                     }
                     else
                     {
-                        platformColor = isDarkTheme
-                            ? new Android.Graphics.Color(0, 0, 0, 255)  // Black for dark theme
-                            : new Android.Graphics.Color(255, 255, 255, 255);  // White for light theme
+                        // For full-screen modals, use the configured color for system bars
+                        mauiSystemBarColor = ResourcesHelper.GetColor(
+                            darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundDarkColor
+                                      : MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundColor,
+                            darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
+                    }
+                    platformColor = mauiSystemBarColor.ToPlatform();
+                }
+                else
+                {
+                    // Can't access resources, use default behavior
+                    if (platformColor == Android.Graphics.Color.Transparent)
+                    {
+                        bool isDarkTheme = Microsoft.Maui.Controls.Application.Current?.RequestedTheme == AppTheme.Dark;
+                        if (modalMode == ModalPageMode.Overlay)
+                        {
+                            platformColor = new Android.Graphics.Color(0, 0, 0, 128);  // Semi-transparent
+                        }
+                        else
+                        {
+                            platformColor = isDarkTheme
+                                ? new Android.Graphics.Color(0, 0, 0, 255)  // Black for dark theme
+                                : new Android.Graphics.Color(255, 255, 255, 255);  // White for light theme
+                        }
+                    }
+                }
+
+                // 2. Tell android to allow the modal page to extend outside the default "safe zones" (margins) of
+                //    the screen. The overlay color of your popup will then physically extend to the top of the screen.
+                //    Window must be the one from dialogFragment.Dialog in order to work correctly with all
+                //    API's starting with API 26.
+                if (platformColor == Android.Graphics.Color.Transparent)
+                {
+                    dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+                    dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+                }
+                else
+                {
+                    dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.DimBehind);
+                    dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+                    if (MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling)
+                    {
+                        dialogWindow.SetStatusBarColor(platformColor);
+                    }
+                    // 3. Set system bars background color
+                    if (MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
+                    {
+                        dialogWindow.SetNavigationBarColor(platformColor);
                     }
                 }
             }
-
-            // 2. Set system bars appearance (light or dark icons).
-            //    Window must be the one from dialogFragment.Dialog in order to work correctly with all
-            //    API's starting with API 26.
-            var window = dialogFragment.Dialog.Window;
-            SystemBarsService.SetSystemBarsIconsAppearance(window);
-
-            // 3. Set system bars background color
-            if (MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling)
-            {
-                dialogWindow.SetStatusBarColor(platformColor);
-            }
-            if (MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
-            {
-                dialogWindow.SetNavigationBarColor(platformColor);
-            }
-
         }
 
         /// <summary>

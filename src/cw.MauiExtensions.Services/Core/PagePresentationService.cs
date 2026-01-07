@@ -3,20 +3,23 @@ using cw.MauiExtensions.Services.Helpers;
 using cw.MauiExtensions.Services.Events;
 using cw.MauiExtensions.Services.Interfaces;
 using System.Diagnostics;
+#if WINDOWS
+using cw.MauiExtensions.Services.Platforms.Windows;
+#endif
 
 namespace cw.MauiExtensions.Services.Core
 {
-    public class PageNavigationService
+    public class PagePresentationService
     {
-        private static volatile PageNavigationService? sInstance;
+        private static volatile PagePresentationService? sInstance;
 
-        public static PageNavigationService Instance
+        public static PagePresentationService Instance
         {
             get
             {
                 if (sInstance == null)
                 {
-                    sInstance = new PageNavigationService();
+                    sInstance = new PagePresentationService();
                 }
                 return sInstance;
             }
@@ -38,7 +41,7 @@ namespace cw.MauiExtensions.Services.Core
             ReplaceCurrent
         }
 
-        PageNavigationService()
+        PagePresentationService()
         {
             if (Application.Current != null)
             {
@@ -46,7 +49,53 @@ namespace cw.MauiExtensions.Services.Core
             }
         }
 
-        public NavigationPage OpenMainPage(Type viewType, object viewModel)
+        /// <summary>
+        /// Creates and returns a new main page instance of the specified type, optionally initialized with the provided
+        /// view model. The page is not created in a NavigationPage and so doesn't support navigation stack.
+        /// </summary>
+        /// <remarks>If a navigation page is currently active, this method performs cleanup before
+        /// creating the new main page. The method uses reflection to instantiate the page, so ensure that the specified
+        /// type and constructor are accessible. The caller is responsible for handling any exceptions that may occur
+        /// during page creation.</remarks>
+        /// <param name="viewType">The type of the page to create. Must be a type that derives from Page and has a public constructor that
+        /// matches the provided parameters.</param>
+        /// <param name="viewModel">An optional view model to pass to the page's constructor. If null, the page is created using its
+        /// parameterless constructor.</param>
+        /// <returns>A new instance of the specified page type, or null if the page could not be created.</returns>
+        public Page? OpenMainPage(Type viewType, object viewModel)
+        {
+            // 1. Before creating the new page we must cleanup a possibly existing NavigationPage.
+            if (_navigationPage != null)
+            {
+                foreach (var p in _navigationPage.Navigation.NavigationStack)
+                {
+                    OnNavigationPagePopped(this, new NavigationEventArgs(p));
+                }
+                // Deregister 'popped' event handlers
+                _navigationPage.Popped -= OnNavigationPagePopped;
+                _navigationPage.PoppedToRoot -= OnNavigationPagePoppedToRoot;
+            }
+            // 2. Create page instance
+            object? pageObject = viewModel == null
+                ? Activator.CreateInstance(viewType)
+                : Activator.CreateInstance(viewType, viewModel);
+            return (Page?)pageObject;
+        }
+
+        /// <summary>
+        /// Replaces the application's main page with a new navigation page whose root is created from the specified
+        /// view type and optional view model.
+        /// </summary>
+        /// <remarks>This method clears the existing navigation stack and detaches event handlers before
+        /// setting the new main page. The new navigation page becomes the application's main page, and its navigation
+        /// bar appearance is updated accordingly.</remarks>
+        /// <param name="viewType">The type of the page to use as the root of the new navigation stack. Must derive from Page and have a public
+        /// constructor compatible with the provided view model.</param>
+        /// <param name="viewModel">An optional view model to pass to the page's constructor. If null, the page is created using its
+        /// parameterless constructor.</param>
+        /// <returns>A NavigationPage instance representing the new main navigation page, with the specified page as its root.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the application is not initialized or if an instance of the specified view type cannot be created.</exception>
+        public NavigationPage OpenMainNavigationPage(Type viewType, object viewModel)
         {
             if (Application.Current == null)
             {
@@ -101,7 +150,7 @@ namespace cw.MauiExtensions.Services.Core
             return _navigationPage;
         }
 
-        public async Task OpenContentPageAsync(Type viewType, object viewModel, OpenMode mode = OpenMode.PushToStack, int pagesToPopCount = 0)
+        public async Task PushPageAsync(Type viewType, object viewModel, OpenMode mode = OpenMode.PushToStack, int pagesToPopCount = 0)
         {
             try
             {
@@ -223,7 +272,7 @@ namespace cw.MauiExtensions.Services.Core
         }
 
 
-        public async Task CloseContentPageAsync(int nrofPagesToPop = 1)
+        public async Task PopPageAsync(int nrofPagesToPop = 1)
         {
             if (_navigationPage == null)
             {
@@ -353,16 +402,31 @@ namespace cw.MauiExtensions.Services.Core
         {
             if (_navigationPage != null)
             {
+                // Set MAUI NavigationPage colors on all platforms
                 bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
-                var backgroundColor = ResourcesHelper.GetColor(darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.MauiNavigationBarBackgroundDarkColor
-                                                                         : MauiExtensionsConfiguration.Instance.ResourceKeys.MauiNavigationBarBackgroundColor,
-                                                                  darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
+                
+                // Try to get toolbar-specific colors first, fall back to navigation bar colors
+                string toolbarBgKey = darkTheme 
+                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundDarkColor
+                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundColor;
+                
+                string toolbarTextKey = darkTheme
+                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextDarkColor
+                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextColor;
+                
+                var backgroundColor = ResourcesHelper.GetColor(toolbarBgKey,
+                                                               darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
                 _navigationPage.BarBackgroundColor = backgroundColor;
 
-                var textColor = ResourcesHelper.GetColor(darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.MauiNavigationBarTextDarkColor
-                                                                   : MauiExtensionsConfiguration.Instance.ResourceKeys.MauiNavigationBarTextColor,
-                                                                  darkTheme ? Color.FromRgba(255, 255, 255, 255) : Color.FromRgba(0, 0, 0, 255));
+                var textColor = ResourcesHelper.GetColor(toolbarTextKey,
+                                                         darkTheme ? Color.FromRgba(255, 255, 255, 255) : Color.FromRgba(0, 0, 0, 255));
                 _navigationPage.BarTextColor = textColor;
+
+#if WINDOWS
+                // Also configure Windows title bar to match
+                // Pass both navigation bar and toolbar colors to Windows service
+                WindowsTitleBarService.ConfigureTitleBar();
+#endif
             }
         }
 

@@ -5,6 +5,10 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using System.Diagnostics;
 #endif
+#if WINDOWS
+using cw.MauiExtensions.Services.Platforms.Windows;
+using Microsoft.Maui.LifecycleEvents;
+#endif
 
 namespace cw.MauiExtensions.Services.Extensions
 {
@@ -34,7 +38,7 @@ namespace cw.MauiExtensions.Services.Extensions
             MauiExtensionsConfiguration.Instance = config;
 
 #if ANDROID
-            if (!MauiExtensionsConfiguration.Instance.UseCommunityToolkitMaui)
+            if (MauiExtensionsConfiguration.Instance.UseSmartSystemBarColoringWithModals)
             {
                 // Create the DialogFragmentService of cw.MauiExtensions.Services as a singleton for Android to handle status
                 // bar and navigation bar colors with modal pages for any API starting with API 26.
@@ -45,7 +49,7 @@ namespace cw.MauiExtensions.Services.Extensions
                 events.AddAndroid(android => android
                     .OnCreate((activity, bundle) =>
                     {
-                        if (!MauiExtensionsConfiguration.Instance.UseCommunityToolkitMaui)
+                        if (MauiExtensionsConfiguration.Instance.UseSmartSystemBarColoringWithModals)
                         {
                             // Register FragmentLifecycleCallbacks provided by the above DialogFragmentService to
                             // handle dialog fragments.
@@ -66,9 +70,28 @@ namespace cw.MauiExtensions.Services.Extensions
                     })
                     .OnResume((activity) =>
                     {
-                        // Set system bars color when the activity starts and resumes
-                        SystemBarsService.SetSystemBarsColor(activity);
+                        if (MauiExtensionsConfiguration.Instance.UseSmartSystemBarColoring)
+                        {
+                            // Set system bars color when the activity starts and resumes
+                            SystemBarsService.SetSystemBarsColor(activity);
+                        }
                     })); 
+            });
+#endif
+
+#if WINDOWS
+            builder.ConfigureLifecycleEvents(events =>
+            {
+                events.AddWindows(windows => windows
+                    .OnLaunched((window, args) =>
+                    {
+                        // Register the WinUI window with WindowsTitleBarService
+                        // This happens automatically so users don't need to add code to their App.xaml.cs
+                        var mauiWindow = Microsoft.Maui.Controls.Application.Current.Windows[0];
+                        var nativeWindow = (Microsoft.UI.Xaml.Window)mauiWindow.Handler.PlatformView;
+                        WindowsTitleBarService.RegisterWindow(nativeWindow);
+                        WindowsTitleBarService.ConfigureTitleBar(nativeWindow);
+                    }));
             });
 #endif
 

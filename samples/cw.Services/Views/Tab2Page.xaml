@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="cw.MauiExtensions.Services.Demo.Views.Tab2Page"
+             Title="Features"
+             IconImageSource="settings.png"
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="30"
+                             Spacing="20">
+            <Label Text="Features Tab"
+                   Style="{StaticResource Headline}"
+                   SemanticProperties.HeadingLevel="Level1" />
+            
+            <Label Text="This demo shows:"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+            
+            <Border Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10"
+                    Padding="15"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="- TabbedPage navigation"
+                           FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+                    <Label Text="- Multiple tabs with different content"
+                           FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+                    <Label Text="- Tab icons and titles"
+                           FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+                    <Label Text="- Theme-aware styling"
+                           FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+            
+            <Label Text="TabbedPage is useful for organizing related content into separate views that users can quickly switch between."
+                   FontSize="14"
+                   LineBreakMode="WordWrap"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+            
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</ContentPage>
