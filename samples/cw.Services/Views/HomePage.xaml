@@ -9,13 +9,6 @@
              Padding="0,0,0,0"
              Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
 
-  <!--<ContentPage.Behaviors>
-    <toolkit:StatusBarBehavior
-        StatusBarColor="{AppThemeBinding Light={StaticResource SystemBarsBackground}, Dark={StaticResource SystemBarsBackgroundDark}}"
-        StatusBarStyle="{AppThemeBinding Light='DarkContent', Dark='LightContent'}" />
-  </ContentPage.Behaviors>-->
-
-
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Settings" Order="Primary" IconImageSource="{AppThemeBinding Light=settings_24dp.png, Dark=settings_24dp_dark.png}" Command="{Binding OpenNonModalPageCommand}"/>
   </ContentPage.ToolbarItems>
@@ -27,9 +20,9 @@
            LineBreakMode="WordWrap"
            VerticalOptions="Center" 
            HorizontalOptions="Center" />
-    <Button Text="Open NonModal Page"
+    <Button Text="Push page on stack"
             Command="{Binding OpenNonModalPageCommand}" />
-    <Button Text="Open Modal Page"
+    <Button Text="Open a Modal Page"
             Command="{Binding OpenModalPageCommand}" />
     <Button Text="Show Content Dialog"
             Command="{Binding OpenContentDialogCommand}" />

@@ -3,7 +3,9 @@ using cw.MauiExtensions.Services.Views;
 
 namespace cw.MauiExtensions.Services.Demo.Views;
 
-public partial class MyPopup : ContentDialog
+public record MyPopupResult(bool IsSaved, bool IsChecked = false);
+
+public partial class MyPopup : ContentDialog<MyPopupResult>
 {
 	public MyPopup(MyPopupViewModel viewModel)
 	{
@@ -13,11 +15,11 @@ public partial class MyPopup : ContentDialog
 
     private async void OnSaveButtonClicked(object sender, EventArgs e)
     {
-        await CloseWithResultAsync(ContentDialogResult.Primary);
+        await CloseWithResultAsync(new MyPopupResult(true, ((MyPopupViewModel)BindingContext).IsChecked));
     }
 
     private async void OnCancelButtonClicked(object sender, EventArgs e)
     {
-        await CloseWithResultAsync(ContentDialogResult.Secondary);
+        await CloseWithResultAsync(new MyPopupResult(false));
     }
 }

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <meviews:ContentDialog xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                   xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
-                   xmlns:meviews="clr-namespace:cw.MauiExtensions.Services.Views;assembly=cw.MauiExtensions.Services"
-                   x:DataType="vm:MyPopupViewModel"
-                   x:Class="cw.MauiExtensions.Services.Demo.Views.MyPopup">
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+                       xmlns:meviews="clr-namespace:cw.MauiExtensions.Services.Views;assembly=cw.MauiExtensions.Services"
+                       xmlns:views="clr-namespace:cw.MauiExtensions.Services.Demo.Views"
+                       x:DataType="vm:MyPopupViewModel"
+                       x:TypeArguments="views:MyPopupResult"
+                       x:Class="cw.MauiExtensions.Services.Demo.Views.MyPopup">
   <meviews:ContentDialog.ContentView>
     <Border Margin="32,0,32,0"
             x:Name="PopupBorder"

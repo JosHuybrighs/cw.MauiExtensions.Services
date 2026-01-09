@@ -12,11 +12,8 @@ namespace cw.MauiExtensions.Services.Demo.Views
 
         private async void OnCloseButtonClicked(object sender, EventArgs e)
         {
-            // Close the tabbed page (pop it from navigation stack)
-            //await PagePresentationService.Instance.CloseContentPageAsync();
-
             // Open the main page again
-            PagePresentationService.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
+            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
         }
     }
 }

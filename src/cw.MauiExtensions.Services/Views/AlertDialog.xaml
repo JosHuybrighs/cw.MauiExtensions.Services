@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<meviews:ContentDialog xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<views:ContentDialog xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                        xmlns:meviews="clr-namespace:cw.MauiExtensions.Services.Views;assembly=cw.MauiExtensions.Services"
+                       xmlns:views="clr-namespace:cw.MauiExtensions.Services.Views"
                        x:Class="cw.MauiExtensions.Services.Views.AlertDialog"
+                       x:TypeArguments="views:ContentDialogResult"
                        Title="AlertDialog">
-  <meviews:ContentDialog.ContentView>
+  <views:ContentDialog.ContentView>
     <Border x:Name="DialogBorder"
             WidthRequest="300"
             Padding="10,10,16,10">
@@ -30,5 +32,5 @@
         </Grid>
       </VerticalStackLayout>
     </Border>
-  </meviews:ContentDialog.ContentView>
-</meviews:ContentDialog>
+  </views:ContentDialog.ContentView>
+</views:ContentDialog>

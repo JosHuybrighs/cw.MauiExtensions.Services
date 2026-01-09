@@ -31,15 +31,10 @@ namespace cw.MauiExtensions.Services.Core
         public event EventHandler<PageRemovedEventArgs>? PageRemoved;
 
 
-        NavigationPage? _navigationPage;
+        NavigationPage? _mainNavigationPage;
+        Page? _mainPage;
         readonly SemaphoreSlim _modalSemaphore = new(1, 1);
 
-
-        public enum OpenMode
-        {
-            PushToStack,
-            ReplaceCurrent
-        }
 
         PagePresentationService()
         {
@@ -62,24 +57,42 @@ namespace cw.MauiExtensions.Services.Core
         /// <param name="viewModel">An optional view model to pass to the page's constructor. If null, the page is created using its
         /// parameterless constructor.</param>
         /// <returns>A new instance of the specified page type, or null if the page could not be created.</returns>
-        public Page? OpenMainPage(Type viewType, object viewModel)
+        public Page? OpenMainPage(Type viewType, object? viewModel)
         {
-            // 1. Before creating the new page we must cleanup a possibly existing NavigationPage.
-            if (_navigationPage != null)
+            // 1. Before creating the new page we must cleanup a possibly existing NavigationPage or MainPage.
+            if (_mainNavigationPage != null)
             {
-                foreach (var p in _navigationPage.Navigation.NavigationStack)
+                foreach (var p in _mainNavigationPage.Navigation.NavigationStack)
                 {
                     OnNavigationPagePopped(this, new NavigationEventArgs(p));
                 }
                 // Deregister 'popped' event handlers
-                _navigationPage.Popped -= OnNavigationPagePopped;
-                _navigationPage.PoppedToRoot -= OnNavigationPagePoppedToRoot;
+                _mainNavigationPage.Popped -= OnNavigationPagePopped;
+                _mainNavigationPage.PoppedToRoot -= OnNavigationPagePoppedToRoot;
+                _mainNavigationPage = null;
+            }
+            if (_mainPage != null)
+            {
+                HandlePageRemoved(_mainPage);
+                _mainPage = null;
             }
             // 2. Create page instance
             object? pageObject = viewModel == null
                 ? Activator.CreateInstance(viewType)
                 : Activator.CreateInstance(viewType, viewModel);
-            return (Page?)pageObject;
+
+            // Hook up lifecycle events for the root page
+            HookPageLifecycleEvents((Page)pageObject);
+
+            _mainPage = (Page)pageObject;
+            if (_mainPage != null &&
+                Application.Current.Windows.Count != 0)
+            {
+                // Yes - Set the new page
+                Application.Current.Windows[0].Page = _mainPage;
+            }
+
+            return _mainPage;
         }
 
         /// <summary>
@@ -95,7 +108,7 @@ namespace cw.MauiExtensions.Services.Core
         /// parameterless constructor.</param>
         /// <returns>A NavigationPage instance representing the new main navigation page, with the specified page as its root.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the application is not initialized or if an instance of the specified view type cannot be created.</exception>
-        public NavigationPage OpenMainNavigationPage(Type viewType, object viewModel)
+        public NavigationPage OpenMainNavigationPage(Type viewType, object? viewModel)
         {
             if (Application.Current == null)
             {
@@ -106,15 +119,20 @@ namespace cw.MauiExtensions.Services.Core
             // navigation stack and telling the bound ViewModels that the page they are bound to
             // is gone.
             object? pageObject;
-            if (_navigationPage != null)
+            if (_mainNavigationPage != null)
             {
-                foreach (var p in _navigationPage.Navigation.NavigationStack)
+                foreach (var p in _mainNavigationPage.Navigation.NavigationStack)
                 {
                     OnNavigationPagePopped(this, new NavigationEventArgs(p));
                 }
                 // Deregister 'popped' event handlers
-                _navigationPage.Popped -= OnNavigationPagePopped;
-                _navigationPage.PoppedToRoot -= OnNavigationPagePoppedToRoot;
+                _mainNavigationPage.Popped -= OnNavigationPagePopped;
+                _mainNavigationPage.PoppedToRoot -= OnNavigationPagePoppedToRoot;
+            }
+            if (_mainPage != null)
+            {
+                HandlePageRemoved(_mainPage);
+                _mainPage = null;
             }
             // 2. Create the new main page
             if (viewModel == null)
@@ -131,9 +149,9 @@ namespace cw.MauiExtensions.Services.Core
                 throw new InvalidOperationException($"Could not create instance of type {viewType.FullName}");
             }
             // Create a new NavigationPage with the requested page as root
-            _navigationPage = new NavigationPage((Page)pageObject);
-            _navigationPage.Popped += OnNavigationPagePopped;
-            _navigationPage.PoppedToRoot += OnNavigationPagePoppedToRoot;
+            _mainNavigationPage = new NavigationPage((Page)pageObject);
+            _mainNavigationPage.Popped += OnNavigationPagePopped;
+            _mainNavigationPage.PoppedToRoot += OnNavigationPagePoppedToRoot;
 
             // Hook up lifecycle events for the root page
             HookPageLifecycleEvents((Page)pageObject);
@@ -145,87 +163,91 @@ namespace cw.MauiExtensions.Services.Core
             if (Application.Current.Windows.Count != 0)
             {
                 // Yes - Set the new page
-                Application.Current.Windows[0].Page = _navigationPage;
+                Application.Current.Windows[0].Page = _mainNavigationPage;
             }
-            return _navigationPage;
+            return _mainNavigationPage;
         }
 
-        public async Task PushPageAsync(Type viewType, object viewModel, OpenMode mode = OpenMode.PushToStack, int pagesToPopCount = 0)
+        /// <summary>
+        /// Navigates to a new page of the specified type, optionally associating a view model and controlling how the
+        /// navigation stack is modified.
+        /// </summary>
+        /// <remarks>If pagesToPopCount is greater than zero, the method removes the specified number of
+        /// pages from the navigation stack before navigating to the new page. The method ensures that any modal pages
+        /// are closed before navigation. If the page instance cannot be created, navigation is not performed. Only one
+        /// popup is supported at a time; any open popup is closed before navigation.</remarks>
+        /// <param name="viewType">The type of the page to navigate to. Must be a subclass of Page and have a public constructor that matches
+        /// the provided view model, if any.</param>
+        /// <param name="viewModel">An optional view model to associate with the new page. If null, the page is created using its default
+        /// constructor.</param>
+        /// <param name="pagesToPopCount">The number of pages to remove from the navigation stack before pushing the new page. Must be zero or a
+        /// positive integer.</param>
+        /// <returns>A task that represents the asynchronous navigation operation.</returns>
+        public async Task PushPageAsync(Type viewType, object viewModel, int pagesToPopCount = 0)
         {
             try
             {
-                // Close a possible popup that is still open.
-                // Note: the service only allows 1 popup to be open.
-                //await AppPopupService.Instance.ClosePopupAsync();
-                switch (mode)
+                if (_mainNavigationPage == null)
                 {
-                    case OpenMode.ReplaceCurrent:
-                        break;
-
-                    case OpenMode.PushToStack:
-                        if (_navigationPage == null)
-                        {
-                            Debug.WriteLine("AppShellNavigationService.OnOpenContentPageEvent - NavigationPage is null");
-                            return;
-                        }
-                        // Remove possible modal pages anyhow
-                        while (_navigationPage.Navigation.ModalStack.Count != 0)
-                        {
-                            await _navigationPage.Navigation.PopModalAsync(animated: false);
-                        }
-                        object? instanceObject;
-                        if (viewModel == null)
-                        {
-                            instanceObject = Activator.CreateInstance(viewType);
-                        }
-                        else
-                        {
-                            instanceObject = Activator.CreateInstance(viewType, viewModel);
-                        }
-                        if (instanceObject == null)
-                        {
-                            Debug.WriteLine($"AppShellNavigationService.OnOpenContentPageEvent - Could not create instance of type {viewType.FullName}");
-                            return;
-                        }
-                        Page newPage = (Page)instanceObject;
-                        
-                        // Hook up lifecycle events for the new page
-                        HookPageLifecycleEvents(newPage);
-                        
-                        int popCount = pagesToPopCount;
-                        if (popCount != 0)
-                        {
-                            int navStackCount = _navigationPage.Navigation.NavigationStack.Count;
-                            if (navStackCount > 6)
-                            {
-
-                            }
-                            Page insertBeforePage = _navigationPage.Navigation.NavigationStack[navStackCount - 1];
-                            _navigationPage.Navigation.InsertPageBefore(newPage, insertBeforePage);
-                            while (popCount != 0 &&
-                                   _navigationPage.Navigation.NavigationStack.Count != 1)
-                            {
-                                if (popCount != 1)
-                                {
-                                    Page pageToRemove = _navigationPage.Navigation.NavigationStack[navStackCount - pagesToPopCount];
-                                    _navigationPage.Navigation.RemovePage(pageToRemove);
-                                    // Report popped
-                                    OnNavigationPagePopped(this, new NavigationEventArgs(pageToRemove));
-                                }
-                                else
-                                {
-                                    Page poppedPage = await _navigationPage.Navigation.PopAsync();
-                                }
-                                popCount--;
-                            }
-                        }
-                        else
-                        {
-                            await _navigationPage.Navigation.PushAsync(newPage);
-                        }
-                        break;
+                    Debug.WriteLine("AppShellNavigationService.OnOpenContentPageEvent - NavigationPage is null");
+                    return;
                 }
+                // Remove possible modal pages.
+                // Note: the service doesn't allow a modal page to remain open when a new page is opened.
+                while (_mainNavigationPage.Navigation.ModalStack.Count != 0)
+                {
+                    await _mainNavigationPage.Navigation.PopModalAsync(animated: false);
+                }
+                object? instanceObject;
+                if (viewModel == null)
+                {
+                    instanceObject = Activator.CreateInstance(viewType);
+                }
+                else
+                {
+                    instanceObject = Activator.CreateInstance(viewType, viewModel);
+                }
+                if (instanceObject == null)
+                {
+                    Debug.WriteLine($"AppShellNavigationService.OnOpenContentPageEvent - Could not create instance of type {viewType.FullName}");
+                    return;
+                }
+                Page newPage = (Page)instanceObject;
+                        
+                // Hook up lifecycle events for the new page
+                HookPageLifecycleEvents(newPage);
+                        
+                int popCount = pagesToPopCount;
+                if (popCount != 0)
+                {
+                    int navStackCount = _mainNavigationPage.Navigation.NavigationStack.Count;
+                    if (navStackCount > 6)
+                    {
 
+                    }
+                    Page insertBeforePage = _mainNavigationPage.Navigation.NavigationStack[navStackCount - 1];
+                    _mainNavigationPage.Navigation.InsertPageBefore(newPage, insertBeforePage);
+                    while (popCount != 0 &&
+                            _mainNavigationPage.Navigation.NavigationStack.Count != 1)
+                    {
+                        if (popCount != 1)
+                        {
+                            Page pageToRemove = _mainNavigationPage.Navigation.NavigationStack[navStackCount - pagesToPopCount];
+                            _mainNavigationPage.Navigation.RemovePage(pageToRemove);
+                            // Report popped
+                            OnNavigationPagePopped(this, new NavigationEventArgs(pageToRemove));
+                        }
+                        else
+                        {
+                            Page poppedPage = await _mainNavigationPage.Navigation.PopAsync();
+                        }
+                        popCount--;
+                    }
+                }
+                else
+                {
+                    await _mainNavigationPage.Navigation.PushAsync(newPage);
+                }
             }
             catch (Exception ex)
             {
@@ -235,15 +257,13 @@ namespace cw.MauiExtensions.Services.Core
 
 
         /// <summary>
-        /// Opens a modal page and updates system bar colors.
+        /// Asynchronously displays the specified page as a modal dialog on top of the current navigation stack.
         /// </summary>
-        /// <param name="modalPage">The page to display as a modal.</param>
-        /// <exception cref="KeyNotFoundException">
-        /// Thrown when required color resources are not defined in App.xaml.
-        /// Required resources: 
-        /// - ModalStatusBarBackground (light theme)
-        /// - ModalStatusBarBackgroundDark (dark theme)
-        /// </exception>
+        /// <remarks>This method ensures that only one modal page is presented at a time by synchronizing
+        /// access. The modal page is pushed onto the navigation stack of the application's main window.</remarks>
+        /// <param name="modalPage">The page to present modally. Cannot be null.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the current application or the main page is not available.</exception>
         public async Task OpenModalPageAsync(Page modalPage)
         {
             if (Application.Current == null)
@@ -272,22 +292,38 @@ namespace cw.MauiExtensions.Services.Core
         }
 
 
+        /// <summary>
+        /// Removes one or more pages from the top of the navigation stack asynchronously.
+        /// </summary>
+        /// <remarks>If the navigation stack contains fewer pages than specified by nrofPagesToPop, only
+        /// the available pages will be removed. No action is taken if the navigation page is not set.</remarks>
+        /// <param name="nrofPagesToPop">The number of pages to remove from the navigation stack. Must be greater than or equal to 1. Defaults to 1.</param>
+        /// <returns></returns>
         public async Task PopPageAsync(int nrofPagesToPop = 1)
         {
-            if (_navigationPage == null)
+            if (_mainNavigationPage == null)
             {
                 Debug.WriteLine("AppShellNavigationService.CloseContentPageAsync - NavigationPage is null");
                 return;
             }
             while (nrofPagesToPop-- > 0)
             {
-                Page pageToRemove = _navigationPage.Navigation.NavigationStack.Last();
-                _navigationPage.Navigation.RemovePage(pageToRemove);
+                Page pageToRemove = _mainNavigationPage.Navigation.NavigationStack.Last();
+                _mainNavigationPage.Navigation.RemovePage(pageToRemove);
                 // Report popped
                 OnNavigationPagePopped(this, new NavigationEventArgs(pageToRemove));
             }
         }
 
+        /// <summary>
+        /// Asynchronously closes the topmost modal page if one is present on the application's main window.
+        /// </summary>
+        /// <remarks>If the modal page's binding context implements IAutoDisposableOnPageClosed, it is
+        /// disposed before the page is closed. The PageRemoved event is raised after a modal page is successfully
+        /// removed. This method is thread-safe and ensures only one modal close operation occurs at a time.</remarks>
+        /// <returns>A task that represents the asynchronous close operation. The task completes when the modal page has been
+        /// closed or if no modal page was present.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the current application instance is not available.</exception>
         public async Task CloseModalPageAsync()
         {
             if (Application.Current == null)
@@ -329,6 +365,17 @@ namespace cw.MauiExtensions.Services.Core
         {
             // Get the popped Page
             Page page = e.Page;
+            HandlePageRemoved(page);
+        }
+
+        private void OnNavigationPagePoppedToRoot(object? sender, NavigationEventArgs e)
+        {
+            OnNavigationPagePopped(sender, e);
+        }
+
+
+        private void HandlePageRemoved(Page page)
+        {
             if (page != null)
             {
                 // Unhook lifecycle events
@@ -344,11 +391,6 @@ namespace cw.MauiExtensions.Services.Core
                 PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
             }
             //GC.Collect();
-        }
-
-        private void OnNavigationPagePoppedToRoot(object? sender, NavigationEventArgs e)
-        {
-            OnNavigationPagePopped(sender, e);
         }
 
 
@@ -400,7 +442,7 @@ namespace cw.MauiExtensions.Services.Core
 
         private void UpdateNavigationBarColors()
         {
-            if (_navigationPage != null)
+            if (_mainNavigationPage != null)
             {
                 // Set MAUI NavigationPage colors on all platforms
                 bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
@@ -416,11 +458,11 @@ namespace cw.MauiExtensions.Services.Core
                 
                 var backgroundColor = ResourcesHelper.GetColor(toolbarBgKey,
                                                                darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
-                _navigationPage.BarBackgroundColor = backgroundColor;
+                _mainNavigationPage.BarBackgroundColor = backgroundColor;
 
                 var textColor = ResourcesHelper.GetColor(toolbarTextKey,
                                                          darkTheme ? Color.FromRgba(255, 255, 255, 255) : Color.FromRgba(0, 0, 0, 255));
-                _navigationPage.BarTextColor = textColor;
+                _mainNavigationPage.BarTextColor = textColor;
 
 #if WINDOWS
                 // Also configure Windows title bar to match

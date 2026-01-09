@@ -17,6 +17,14 @@
   
     </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Views\ContentDialogOld.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Remove="Views\ContentDialogOld.xaml" />
+  </ItemGroup>
+
 	<!-- Include README in package -->
 
 	<ItemGroup>
@@ -27,20 +35,11 @@
 	  <MauiXaml Update="Views\AlertDialog.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\ContentDialog.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Folder Include="Platforms\iOS\" />
 	  <Folder Include="Resources\Styles\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="Views\ContentDialog.xaml.cs">
-	    <DependentUpon>ContentDialog.xaml</DependentUpon>
-	  </Compile>
 	</ItemGroup>
 
 </Project>

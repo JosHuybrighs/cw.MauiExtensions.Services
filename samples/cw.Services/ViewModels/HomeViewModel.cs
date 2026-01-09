@@ -15,13 +15,13 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         async Task OpenNonModalPage()
         {
             // Navigate to a non-modal page
-            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel());
+            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
         }
 
         [RelayCommand]
         async Task OpenModalPage()
         {
-            // Navigate to a non-modal page
+            // Navigate to modal page on the stack
             await PagePresentationService.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
         }
 
@@ -31,8 +31,9 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
             var vm = new MyPopupViewModel();
             var myPopup = new MyPopup(vm);
             var result = await myPopup.ShowAsync();
-            if (result == ContentDialogResult.Primary &&
-                vm.IsChecked)
+            if (result != null &&
+                result.IsSaved &&
+                result.IsChecked)
             {
                 // User clicked Save and has checked the checkbox
             }
@@ -61,7 +62,7 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         [RelayCommand]
         async Task OpenTabbedPage()
         {
-            PagePresentationService.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
+            var page = PagePresentationService.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
         }
 
 

@@ -11,14 +11,6 @@
             BarBackground="{AppThemeBinding Light={StaticResource TabBarBackground}, Dark={StaticResource TabBarBackgroundDark}}"
             BarTextColor="{AppThemeBinding Light={StaticResource TabBarText}, Dark={StaticResource TabBarTextDark}}">
 
-
-  <!--<TabbedPage.Behaviors>
-    <toolkit:StatusBarBehavior
-        StatusBarColor="{AppThemeBinding Light={StaticResource SystemBarsBackground}, Dark={StaticResource SystemBarsBackgroundDark}}"
-        StatusBarStyle="{AppThemeBinding Light='DarkContent', Dark='LightContent'}" />
-
-  </TabbedPage.Behaviors>-->
-
   <views:Tab1Page />
   <views:Tab2Page />
   <views:Tab3Page />

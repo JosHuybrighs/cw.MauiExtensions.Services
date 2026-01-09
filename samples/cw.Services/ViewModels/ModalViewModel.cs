@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cw.MauiExtensions.Services.Core;
+using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Interfaces;
+using MauiExtensions.Demo.Views;
 using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Demo.ViewModels
@@ -13,6 +15,10 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         {
             // Close the modal page
             await PagePresentationService.Instance.CloseModalPageAsync();
+        }
+
+        public ModalViewModel()
+        {
         }
 
         public void Dispose()

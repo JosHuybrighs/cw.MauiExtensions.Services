@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using cw.MauiExtensions.Services.Core;
-using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Events;
 using System.Diagnostics;
 

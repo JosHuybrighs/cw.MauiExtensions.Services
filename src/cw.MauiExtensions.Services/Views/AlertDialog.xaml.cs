@@ -2,7 +2,15 @@ using cw.MauiExtensions.Services.Helpers;
 
 namespace cw.MauiExtensions.Services.Views;
 
-public partial class AlertDialog : ContentDialog
+public enum ContentDialogResult
+{
+    None,
+    Primary,
+    Secondary
+}
+
+
+public partial class AlertDialog : ContentDialog<ContentDialogResult>
 {
     public AlertDialog(string title, string text, string primaryBttnText, string? secondaryBttnText)
     {

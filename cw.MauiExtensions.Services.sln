@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cw.MauiExtensions.Services"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E61B3756-7998-4994-996A-EE45DFE8EBC0}"
 	ProjectSection(SolutionItems) = preProject
+		src\docs\ContentDialog.md = src\docs\ContentDialog.md
 		README.md = README.md
+		src\docs\ContentDialogOld.md = src\docs\ContentDialogOld.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cw.MauiExtensions.Services.Demo", "samples\cw.Services\cw.MauiExtensions.Services.Demo.csproj", "{B768725E-9C96-56AC-03C5-1BA0DC94E997}"

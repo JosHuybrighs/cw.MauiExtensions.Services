@@ -2,9 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
-             x:Class="MauiExtensions.Demo.Views.ModalPage"
              x:DataType="vm:ModalViewModel"
-             Title="ModalPage"
+             x:Class="MauiExtensions.Demo.Views.ModalPage"
+             Title="Modal page"
              Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
     <VerticalStackLayout Padding="18,48,18,0"
                          Spacing="25">
