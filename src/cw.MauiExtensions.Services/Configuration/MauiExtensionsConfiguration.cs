@@ -89,19 +89,26 @@ namespace cw.MauiExtensions.Services.Configuration
 
     public class MauiExtensionsConfiguration
     {
-        //private Func<Style>? _alertDialogBorderStyleProvider;
-        //private Func<Style>? _alertDialogButtonStyleProvider;
-
-        //private Style? _alertDialogBorderStyle;
-        //private Style? _alertDialogButtonStyle;
-
         /// <summary>
         /// Property holding all resource keys used by the cw.MauiExtensions.Services library.
         /// </summary>
         public MauiExtensionsResourceKeys ResourceKeys { get; set; } = new();
 
-        public bool DrawUnderSystemBars { get; set; } = true;
+        public bool EnableEdgeToEdge { get; set; } = true;
         public bool AppHasNavigationBar { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a boolean that indicates whether the system bars have dark icons when a modal page is open in light mode.
+        /// </summary>
+        /// <remarks>The default is true.</remarks>
+        public bool UseDarkSystemBarIconsWithModalPages { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a boolean that indicates whether the system bars have dark icons when a modal page is open in dark mode.
+        /// </summary>
+        /// <remarks>The default is false.</remarks>
+        public bool UseDarkSystemBarIconsWithModalPagesDark { get; set; } = false;
+
 
 
         /// <summary>
@@ -123,6 +130,7 @@ namespace cw.MauiExtensions.Services.Configuration
         /// toolkit:StatusBarBehavior to your startup page. This works well for android API 35+ but not for lower versions.</remarks>
         public bool UseSmartSystemBarColoring { get; set; } = true;
 
+        /*
         /// <summary>
         /// Gets or sets a value indicating whether the library's status bar styling is applied.
         /// </summary>
@@ -138,7 +146,7 @@ namespace cw.MauiExtensions.Services.Configuration
         /// the configured keys <see cref="MauiExtensionsResourceKeys"/>.
         /// Set to <see langword="false"/> to not apply any styling within the library.</remarks>
         public bool UseSystemNavigationBarStyling { get; set; } = true;
-
+        */
 
         internal static MauiExtensionsConfiguration Instance { get; set; } = new();
     }

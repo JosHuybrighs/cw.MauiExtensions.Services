@@ -48,12 +48,13 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
         public static void SetSystemBarsColor(Activity activity)
         {
+            /*
             if (!MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling &&
                 !MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
             {
                 return;
             }
-
+            */
             var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
 
             bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
@@ -63,7 +64,7 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
             bool isLightStatusBar = ShouldUseDarkIcons(mauiSystemBarColor);
 
-            if (MauiExtensionsConfiguration.Instance.DrawUnderSystemBars &&
+            if (MauiExtensionsConfiguration.Instance.EnableEdgeToEdge &&
                 !MauiExtensionsConfiguration.Instance.AppHasNavigationBar)
             {
                 EnableEdgeToEdge(window, isLightStatusBar);
@@ -114,12 +115,9 @@ namespace cw.MauiExtensions.Services.Platforms.Services
                 activity.Window.SetStatusBarColor(systemBarColor);
 
                 // Set NavigationBar color
-                if (MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
+                if (!OperatingSystem.IsAndroidVersionAtLeast(35))
                 {
-                    if (!OperatingSystem.IsAndroidVersionAtLeast(35))
-                    {
-                        activity.Window.SetNavigationBarColor(systemBarColor);
-                    }
+                    activity.Window.SetNavigationBarColor(systemBarColor);
                 }
             }
 

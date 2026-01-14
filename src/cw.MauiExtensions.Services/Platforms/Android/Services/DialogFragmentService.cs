@@ -101,9 +101,7 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
         static void SetSystemBarsColor(DialogFragment dialogFragment, AppCompatActivity activity)
         {
-            if (activity.Window is null ||
-                (!MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling &&
-                 !MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling))
+            if (activity.Window is null)
             {
                 return;
             }
@@ -117,16 +115,18 @@ namespace cw.MauiExtensions.Services.Platforms.Services
             //    the screen. The overlay color of your popup will then physically extend to the top of the screen.
             //    Window must be the one from dialogFragment.Dialog in order to work correctly with all
             //    API's starting with API 26.
-            if (MauiExtensionsConfiguration.Instance.DrawUnderSystemBars)
+            if (MauiExtensionsConfiguration.Instance.EnableEdgeToEdge)
             {
                 //dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
                 //dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
                 bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
-                var mauiSystemBarColor = ResourcesHelper.GetColor(darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundDarkColor
-                                                                            : MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundColor,
-                                                                  darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
+                //var mauiSystemBarColor = ResourcesHelper.GetColor(darkTheme ? MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundDarkColor
+                //                                                            : MauiExtensionsConfiguration.Instance.ResourceKeys.SystemBarsBackgroundColor,
+                //                                                  darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
 
-                bool isLightStatusBar = SystemBarsService.ShouldUseDarkIcons(mauiSystemBarColor);
+                //bool isLightStatusBar = SystemBarsService.ShouldUseDarkIcons(mauiSystemBarColor);
+                bool isLightStatusBar = darkTheme ? MauiExtensionsConfiguration.Instance.UseDarkSystemBarIconsWithModalPagesDark
+                                                  : MauiExtensionsConfiguration.Instance.UseDarkSystemBarIconsWithModalPages;
 
                 SystemBarsService.EnableEdgeToEdge(dialogWindow, isLightStatusBar);
             }
@@ -204,15 +204,9 @@ namespace cw.MauiExtensions.Services.Platforms.Services
                 {
                     dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.DimBehind);
                     dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-                    if (MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling)
-                    {
-                        dialogWindow.SetStatusBarColor(platformColor);
-                    }
+                    dialogWindow.SetStatusBarColor(platformColor);
                     // 3. Set system bars background color
-                    if (MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
-                    {
-                        dialogWindow.SetNavigationBarColor(platformColor);
-                    }
+                    dialogWindow.SetNavigationBarColor(platformColor);
                 }
             }
         }

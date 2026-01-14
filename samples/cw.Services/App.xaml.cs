@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using cw.MauiExtensions.Services.Core;
+using cw.MauiExtensions.Services.Demo.ViewModels;
+using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Events;
 using System.Diagnostics;
 
@@ -18,9 +20,16 @@ namespace cw.MauiExtensions.Services.Demo
         protected override Window CreateWindow(IActivationState? activationState)
         {
             // return new Window(new AppShell());
-            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new ViewModels.HomeViewModel());
+            //var page = PagePresentationService.Instance.OpenMainPage(typeof(ModalPage), new ModalViewModel());
+            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new HomeViewModel());
             //var page = PagePresentationService.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
-            return new Window(page);
+            var titleBar = new DesktopTitleBar(new DesktopTitleBarViewModel());
+            Window window = new Window()
+            {
+                Page = page,
+                TitleBar = titleBar
+            };
+            return window;
         }
 
         private void OnPageRemoved(object? sender, PageRemovedEventArgs e)

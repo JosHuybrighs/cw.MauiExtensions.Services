@@ -1,13 +1,12 @@
 using cw.MauiExtensions.Services.Configuration;
+using Microsoft.Maui.LifecycleEvents;
+#if WINDOWS
+using Microsoft.UI;
+#endif
 #if ANDROID
 using cw.MauiExtensions.Services.Platforms.Services;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
 using System.Diagnostics;
-#endif
-#if WINDOWS
-using cw.MauiExtensions.Services.Platforms.Windows;
-using Microsoft.Maui.LifecycleEvents;
 #endif
 
 namespace cw.MauiExtensions.Services.Extensions
@@ -29,9 +28,8 @@ namespace cw.MauiExtensions.Services.Extensions
         /// });
         /// </code>
         /// </example>
-        public static MauiAppBuilder UseMauiExtensionsServices(
-            this MauiAppBuilder builder,
-            Action<MauiExtensionsConfiguration>? configure = null)
+        public static MauiAppBuilder UseMauiExtensionsServices(this MauiAppBuilder builder,
+                                                               Action<MauiExtensionsConfiguration>? configure = null)
         {
             var config = new MauiExtensionsConfiguration();
             configure?.Invoke(config);
@@ -55,12 +53,12 @@ namespace cw.MauiExtensions.Services.Extensions
                             // handle dialog fragments.
                             if (activity is not AndroidX.AppCompat.App.AppCompatActivity componentActivity)
                             {
-                                Trace.WriteLine($"Unable to Modify Android StatusBar On ModalPage: Activity {activity.LocalClassName} must be an {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
+                                Trace.WriteLine($"Unable to modify Android StatusBar On ModalPage: Activity {activity.LocalClassName} must be an {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
                                 return;
                             }
                             if (componentActivity.GetFragmentManager() is not AndroidX.Fragment.App.FragmentManager fragmentManager)
                             {
-                                Trace.WriteLine($"Unable to Modify Android StatusBar On ModalPage: Unable to retrieve fragment manager from {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
+                                Trace.WriteLine($"Unable to modify Android StatusBar On ModalPage: Unable to retrieve fragment manager from {nameof(AndroidX.AppCompat.App.AppCompatActivity)}");
                                 return;
                             }
                             var dialogFragmentService = IPlatformApplication.Current?.Services.GetRequiredService<IDialogFragmentService>()
@@ -80,21 +78,25 @@ namespace cw.MauiExtensions.Services.Extensions
 #endif
 
 #if WINDOWS
+            // Not used currrently but keep it here for future modifications.
             builder.ConfigureLifecycleEvents(events =>
             {
-                events.AddWindows(windows => windows
-                    .OnLaunched((window, args) =>
+                events.AddWindows(windows => windows.OnWindowCreated(window =>
+                {
+                    var mauiWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+                    if (mauiWindow != null)
                     {
-                        // Register the WinUI window with WindowsTitleBarService
-                        // This happens automatically so users don't need to add code to their App.xaml.cs
-                        var mauiWindow = Microsoft.Maui.Controls.Application.Current.Windows[0];
-                        var nativeWindow = (Microsoft.UI.Xaml.Window)mauiWindow.Handler.PlatformView;
-                        WindowsTitleBarService.RegisterWindow(nativeWindow);
-                        WindowsTitleBarService.ConfigureTitleBar(nativeWindow);
-                    }));
+                        // Get the appWindow for the current window
+                        var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                        var windowId = Win32Interop.GetWindowIdFromWindow(handle);
+                        var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+                        if (appWindow != null)
+                        {
+                        }
+                    }
+                }));
             });
 #endif
-
             return builder;
         }
     }

@@ -3,9 +3,6 @@ using cw.MauiExtensions.Services.Helpers;
 using cw.MauiExtensions.Services.Events;
 using cw.MauiExtensions.Services.Interfaces;
 using System.Diagnostics;
-#if WINDOWS
-using cw.MauiExtensions.Services.Platforms.Windows;
-#endif
 
 namespace cw.MauiExtensions.Services.Core
 {
@@ -467,7 +464,7 @@ namespace cw.MauiExtensions.Services.Core
 #if WINDOWS
                 // Also configure Windows title bar to match
                 // Pass both navigation bar and toolbar colors to Windows service
-                WindowsTitleBarService.ConfigureTitleBar();
+                //WindowsTitleBarService.ConfigureTitleBar(_mainNavigationPage);
 #endif
             }
         }

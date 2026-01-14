@@ -5,17 +5,20 @@
 
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
 
+  <!--<SolidColorBrush x:Key="WindowCaptionBackground" Color="#800000"/>
+  <SolidColorBrush x:Key="WindowCaptionBackgroundDisabled" Color="#404040"/>-->
+  <!--<SolidColorBrush x:Key="WindowCaptionBackground" Color="#800000"/>-->
 
   <!--**********************************************************************-->
   <!-- Default colors in cw.MauiExtensions.Services-->
-  <!-- 1. System colors for ystem bars (status and navigation bars on Android, title bar on windows-->
+  <!-- 1. System colors for system bars (status and navigation bars on Android, title bar on windows, not used on iOS-->
   <Color x:Key="SystemBarsBackground">#F0F0F0</Color>
   <Color x:Key="SystemBarsBackgroundDark">#202020</Color>
   <!-- 2. Page and MAUI toolbar/navigationbar colors-->
   <!--<Color x:Key="PageBackground">#EEEDF4</Color>-->
   <Color x:Key="PageBackground">#F0F0F0</Color>
   <Color x:Key="PageBackgroundDark">#202020</Color>
-  <!-- 3. Navigation bar colors (page title and toolbar items)-->
+  <!-- 3. Navigation bar colors: page title and toolbar items, on iOS also status bar-->
   <Color x:Key="NavigationBarBackground">#F0F0F0</Color>
   <Color x:Key="NavigationBarBackgroundDark">#202020</Color>
   <Color x:Key="NavigationBarText">#202020</Color>
@@ -35,6 +38,13 @@
   <Color x:Key="TabBarBackgroundDark">#202020</Color>
   <Color x:Key="TabBarText">#005FB8</Color>
   <Color x:Key="TabBarTextDark">#60CDFF</Color>
+
+  <LinearGradientBrush x:Key="PageGradient"
+                         StartPoint="0,0"
+                         EndPoint="0,1">
+    <GradientStop Color="#848EA0" Offset="0.0" />
+    <GradientStop Color="#141E30" Offset="1.0" />
+  </LinearGradientBrush>
 
 
 

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TitleBar xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+          x:Class="cw.MauiExtensions.Services.Demo.Views.DesktopTitleBar"
+          Title="Demo App"
+          Subtitle="Welcome to the Demo App"
+          Icon="demoicon.png"
+          HeightRequest="48"
+          BackgroundColor="{AppThemeBinding Light={StaticResource SystemBarsBackground}, Dark={StaticResource SystemBarsBackgroundDark}}"
+          ForegroundColor="{AppThemeBinding Light={StaticResource NavigationBarText}, Dark={StaticResource NavigationBarTextDark}}"
+          x:DataType="vm:DesktopTitleBarViewModel"
+          x:Name="RootTitleBar"> 
+  <TitleBar.Content>
+    <Grid ColumnDefinitions="Auto,*,Auto"
+          Margin="0"
+          Padding="8,0"
+          WidthRequest="400">
+      <Image Grid.Column="0" 
+             Source="info.png"
+             HeightRequest="16" 
+             WidthRequest="16"
+             Margin="0,0,8,0"/>
+      <Grid Grid.Column="1"
+            Background="Transparent">
+        <Label Text="Can't drag here"
+               VerticalOptions="Center"
+               HorizontalOptions="Start"
+               FontSize="12"/>
+      </Grid>
+      <ImageButton Grid.Column="2"
+                   HeightRequest="24"
+                   WidthRequest="24"
+                   BorderWidth="0"
+                   Source="settings.png"
+                   Background="Transparent"
+                   Command="{Binding BindingContext.ShowSettingsCommand, Source={x:Reference RootTitleBar}}"/>
+      </Grid>
+  </TitleBar.Content>
+</TitleBar>

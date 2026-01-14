@@ -8,7 +8,7 @@
     
     <VerticalStackLayout Padding="30"
                          Spacing="25"
-                         VerticalOptions="Center">
+                         VerticalOptions="Start">
         <Label Text="About Tab"
                Style="{StaticResource Headline}"
                SemanticProperties.HeadingLevel="Level1" />

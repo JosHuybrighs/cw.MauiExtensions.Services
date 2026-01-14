@@ -399,33 +399,6 @@ if (result != null &&
 ```
 
 ---
-
-## Built-in Dialog: AlertDialog
-
-The library includes a pre-built `AlertDialog` class for simple alert/confirmation scenarios.
-
-### Usage
-
-```csharp
-using cw.MauiExtensions.Services.Views;
-
-var alert = new AlertDialog(
-    title: "Confirm Delete",
-    text: "Are you sure you want to delete this item? This action cannot be undone.",
-    primaryBttnText: "Delete",
-    secondaryBttnText: "Cancel"
-);
-
-var result = await alert.ShowAsync();
-
-if (result == ContentDialogResult.Primary)
-{
-    await DeleteItemAsync();
-}
-```
-
----
-
 ## Advanced Scenarios
 
 ### 1. Validation Before Closing
