@@ -40,10 +40,10 @@
   <Color x:Key="TabBarTextDark">#60CDFF</Color>
 
   <LinearGradientBrush x:Key="PageGradient"
-                         StartPoint="0,0"
-                         EndPoint="0,1">
-    <GradientStop Color="#848EA0" Offset="0.0" />
-    <GradientStop Color="#141E30" Offset="1.0" />
+                       StartPoint="0,0"
+                       EndPoint="0,1">
+    <GradientStop Color="#F0F0F0" Offset="0.0" />
+    <GradientStop Color="#606060" Offset="1.0" />
   </LinearGradientBrush>
 
 

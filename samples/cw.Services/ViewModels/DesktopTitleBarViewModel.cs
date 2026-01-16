@@ -10,7 +10,7 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         [RelayCommand]
         async Task ShowSettings()
         {
-            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
+            await ViewPresenter.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
         }
     }
 }

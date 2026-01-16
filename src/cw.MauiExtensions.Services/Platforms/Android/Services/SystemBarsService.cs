@@ -48,13 +48,6 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
         public static void SetSystemBarsColor(Activity activity)
         {
-            /*
-            if (!MauiExtensionsConfiguration.Instance.UseSystemStatusBarStyling &&
-                !MauiExtensionsConfiguration.Instance.UseSystemNavigationBarStyling)
-            {
-                return;
-            }
-            */
             var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
 
             bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
@@ -64,26 +57,20 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
             bool isLightStatusBar = ShouldUseDarkIcons(mauiSystemBarColor);
 
-            if (MauiExtensionsConfiguration.Instance.EnableEdgeToEdge &&
-                !MauiExtensionsConfiguration.Instance.AppHasNavigationBar)
+            var systemBarColor = mauiSystemBarColor.ToPlatform();
+            //window.SetBackgroundDrawable(new Android.Graphics.Drawables.ColorDrawable(systemBarColor));
+
+            if (MauiExtensionsConfiguration.Instance.EdgeToEdgeForRootPages)
             {
-                EnableEdgeToEdge(window, isLightStatusBar);
+                // Set system bars by extending the page content into the system bars area (edge-to-edge)
+                EnableEdgeToEdge(window, isLightStatusBar, MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
                 return;
             }
 
-            // This sets the system bars (status bar and navigation bar) background colors at startup of the app and
-            // when the app resumes from background, based on the current theme and configured resource colors.
-            // NOTE: To also have the correct colors with modal pages and popup dialogs, DialogFragmentService is
-            //       also instantiated.
-
-            var systemBarColor = mauiSystemBarColor.ToPlatform();
-
+            // Page content is not extended into system bars area, and so we must set the system bars colors 
+            // according to the configured SystemBarsBackgroundColor or SystemBarsBackgroundDarkColor resource color.
             if (OperatingSystem.IsAndroidVersionAtLeast(35))
             {
-                // The following is taken over from StatusBar.android.cs in CommunityToolkit.Maui.
-                // The navigation bar color musn't (actually can't) be changed on API 35+ since the
-                // page background color overlaps with the system navigation bar area.
-
                 const string statusBarOverlayTag = "StatusBarOverlay";
 
                 var decorGroup = (ViewGroup)window.DecorView;
@@ -108,32 +95,64 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
                 // Set StatusBar color
                 statusBarOverlay.SetBackgroundColor(systemBarColor);
+
+                const string navBarOverlayTag = "NavBarOverlay";
+
+                var navBarOverlay = decorGroup.FindViewWithTag(navBarOverlayTag);
+
+                if (navBarOverlay == null)
+                {
+                    var navBarHeightId = activity.Resources?.GetIdentifier(
+                        "navigation_bar_height", "dimen", "android") ?? 0;
+
+                    var navBarHeight = navBarHeightId > 0
+                        ? activity.Resources?.GetDimensionPixelSize(navBarHeightId) ?? 0
+                        : 0;
+
+                    navBarOverlay = new Android.Views.View(activity)
+                    {
+                        LayoutParameters = new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MatchParent,
+                            navBarHeight)
+                        {
+                            Gravity = GravityFlags.Bottom
+                        }
+                    };
+
+                    //navBarOverlay.SetTag(navBarOverlayTag);
+                    decorGroup.AddView(navBarOverlay);
+                    navBarOverlay.SetZ(0);
+                }
+
+                navBarOverlay.SetBackgroundColor(systemBarColor);
+
+                //ApplyBottomNavBackground(decorGroup, systemBarColor);
+                window.SetBackgroundDrawable(new Android.Graphics.Drawables.ColorDrawable(systemBarColor));
             }
             else
             {
                 // Set StatusBar color
                 activity.Window.SetStatusBarColor(systemBarColor);
-
                 // Set NavigationBar color
-                if (!OperatingSystem.IsAndroidVersionAtLeast(35))
-                {
-                    activity.Window.SetNavigationBarColor(systemBarColor);
-                }
+                activity.Window.SetNavigationBarColor(systemBarColor);
             }
 
+            //bool isColorTransparent = systemBarColor == Android.Graphics.Color.Transparent;
+            //if (isColorTransparent)
+            //{
+            //    activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+            //    activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+            //}
+            //else
+            //{
+            //    activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+            //    activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+            //}
+            //WindowCompat.SetDecorFitsSystemWindows(window, !isColorTransparent);
 
-            bool isColorTransparent = systemBarColor == Android.Graphics.Color.Transparent;
-            if (isColorTransparent)
-            {
-                activity.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-                activity.Window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-            }
-            else
-            {
-                activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-                activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-            }
-            WindowCompat.SetDecorFitsSystemWindows(window, !isColorTransparent);
+            activity.Window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+            activity.Window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+            WindowCompat.SetDecorFitsSystemWindows(window, true);
 
             // Set light or dark status bar icons based on background color brightness
             var decorView = window.DecorView;
@@ -141,6 +160,7 @@ namespace cw.MauiExtensions.Services.Platforms.Services
             if (controller != null)
             {
                 controller.AppearanceLightStatusBars = isLightStatusBar;
+                controller.AppearanceLightNavigationBars = isLightStatusBar;
             }
         }
 
@@ -148,6 +168,25 @@ namespace cw.MauiExtensions.Services.Platforms.Services
         {
             double lum = 0.299 * c.Red + 0.587 * c.Green + 0.114 * c.Blue;
             return lum > 0.5;
+        }
+
+        static void ApplyBottomNavBackground(ViewGroup parent, Android.Graphics.Color color)
+        {
+            for (int i = 0; i < parent.ChildCount; i++)
+            {
+                var child = parent.GetChildAt(i);
+
+                if (child is Google.Android.Material.BottomNavigation.BottomNavigationView bnv)
+                {
+                    bnv.SetBackgroundColor(color);
+                    return;
+                }
+
+                if (child is ViewGroup vg)
+                {
+                    ApplyBottomNavBackground(vg, color);
+                }
+            }
         }
 
 
@@ -188,41 +227,22 @@ namespace cw.MauiExtensions.Services.Platforms.Services
         }
         */
 
-        public class EdgeToEdgeInsetsListener : Java.Lang.Object, Android.Views.View.IOnApplyWindowInsetsListener
+        public class ResetEdgeToEdgeInsetsListener : Java.Lang.Object, Android.Views.View.IOnApplyWindowInsetsListener
         {
-            int _topOffset;
-
-            public EdgeToEdgeInsetsListener(int topOffset)
-            {
-                _topOffset = topOffset;
-            }
-
             public WindowInsets OnApplyWindowInsets(Android.Views.View v, WindowInsets insets)
             {
-                //int statusBarHeight = insets.SystemWindowInsetTop;
-                //statusBarHeight = 0;
-
+                int offset = 0;
                 /*
-                // Find and adjust the toolbar instead of padding the entire view
-                if (v is ViewGroup viewGroup)
-                {
-                    ApplyToolbarPadding(viewGroup, 56);
-                }
-
-                // Don't pad the entire view - let content draw edge-to-edge
-                //return insets;
-                //// Hoogte van de status bar
-                ////statusBarHeight = 18;
+                // Use WindowInsetsCompat for backward compatibility
+                var compatInsets = WindowInsetsCompat.ToWindowInsetsCompat(insets);
+                // Get the height of the status bars (includes the notch/display cutout)
+                offset = compatInsets.GetInsets(WindowInsetsCompat.Type.StatusBars()).Top;
                 */
-                // Padding toepassen zodat content niet onder status bar valt
                 v.SetPadding(v.PaddingLeft,
-                             _topOffset,
+                             offset,
                              v.PaddingRight,
                              v.PaddingBottom);
-
-                // Consume insets zodat MAUI niet onder de status bar stopt
                 return insets.ConsumeSystemWindowInsets();
-                //return insets;
             }
         }
 
@@ -234,29 +254,33 @@ namespace cw.MauiExtensions.Services.Platforms.Services
 
             var window = activity.Window;
 
-            EnableEdgeToEdge(window, isLightStatusBar);
+            EnableEdgeToEdge(window, isLightStatusBar, MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
         }
 
 
-        public static void EnableEdgeToEdge(Android.Views.Window window, bool isLightStatusBar)
+        public static void EnableEdgeToEdge(Android.Views.Window window, bool isLightStatusBar, bool addStatusBarOffset)
         {
             // Edge-to-edge
             WindowCompat.SetDecorFitsSystemWindows(window, false);
 
-            //window.SetStatusBarColor(Android.Graphics.Color.Transparent);
-
             window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
             window.AddFlags(WindowManagerFlags.LayoutNoLimits);
+            //window.SetStatusBarColor(Android.Graphics.Color.Transparent);
+            //window.SetNavigationBarColor(Android.Graphics.Color.Transparent);
+            //window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
 
             var decorView = window.DecorView;
-            // Set the OnApplyWindowInsetsListener to position the view at the top of the screen,
-            // i.e. under the status bar.
-            decorView.SetOnApplyWindowInsetsListener(new EdgeToEdgeInsetsListener(topOffset: 0));
+            // If the next is not called then the page content starts under the status bar.
+            if (!addStatusBarOffset)
+            {
+                decorView.SetOnApplyWindowInsetsListener(new ResetEdgeToEdgeInsetsListener());
+            }
 
             var controller = WindowCompat.GetInsetsController(window, decorView);
             if (controller != null)
             {
                 controller.AppearanceLightStatusBars = isLightStatusBar;
+                controller.AppearanceLightNavigationBars = isLightStatusBar;
             }
         }
 

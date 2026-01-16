@@ -3,6 +3,7 @@ using cw.MauiExtensions.Services.Core;
 using cw.MauiExtensions.Services.Demo.ViewModels;
 using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Events;
+using MauiExtensions.Demo.Views;
 using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Demo
@@ -14,15 +15,15 @@ namespace cw.MauiExtensions.Services.Demo
             InitializeComponent();
             
             // Subscribe to PageRemoved event
-            PagePresentationService.Instance.PageRemoved += OnPageRemoved;
+            ViewPresenter.Instance.PageRemoved += OnPageRemoved;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
             // return new Window(new AppShell());
-            //var page = PagePresentationService.Instance.OpenMainPage(typeof(ModalPage), new ModalViewModel());
-            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new HomeViewModel());
-            //var page = PagePresentationService.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
+            //var page = ViewPresenter.Instance.OpenMainPage(typeof(ModalPage), new ModalViewModel());
+            var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new HomeViewModel());
+            //var page = ViewPresenter.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
             var titleBar = new DesktopTitleBar(new DesktopTitleBarViewModel());
             Window window = new Window()
             {

@@ -437,7 +437,7 @@ var completedTask = await Task.WhenAny(dialogTask, timeoutTask);
 
 if (completedTask == timeoutTask)
 {
-    await PagePresentationService.Instance.CloseModalPageAsync();
+    await ViewPresenter.Instance.CloseModalPageAsync();
 }
 
 var result = await dialogTask;

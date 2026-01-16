@@ -46,22 +46,6 @@ namespace cw.MauiExtensions.Services.Configuration
         public string SystemBarsBackgroundDarkColor { get; set; } = "SystemBarsBackgroundDark";
 
         /// <summary>
-        /// Gets or sets the background color in light mode for pages on which a ContentDialog is opened.
-        /// </summary>
-        /// <remarks>The color is used for creating the opaque background color of the system bars in light mode when a modal page is
-        /// opened in 'Overlay Mode'. The color is calculated by blending PageBackgroundColor and ContentDialogBackgroundOverlayColor.
-        /// The default expected key is "PageBackground".</remarks>
-        public string PageBackgroundColor { get; set; } = "PageBackground";
-
-        /// <summary>
-        /// Gets or sets the background color in dark mode for pages on which a ContentDialog is opened.
-        /// </summary>
-        /// <remarks>The color is used for creating the opaque background color of the system bars in dark mode when a modal page is
-        /// opened in 'Overlay Mode'. The color is calculated by blending PageBackgroundDarkColor and ContentDialogBackgroundOverlayDarkColor.
-        /// The default expected key is "PageBackgroundDark".</remarks>
-        public string PageBackgroundDarkColor { get; set; } = "PageBackgroundDark";
-
-        /// <summary>
         /// Gets or sets the background color in light mode used for the Maui NavigationBar (back button bar).
         /// </summary>
         /// <remarks>The default expected key is "NavigationBarBackground".</remarks>
@@ -94,8 +78,9 @@ namespace cw.MauiExtensions.Services.Configuration
         /// </summary>
         public MauiExtensionsResourceKeys ResourceKeys { get; set; } = new();
 
-        public bool EnableEdgeToEdge { get; set; } = true;
-        public bool AppHasNavigationBar { get; set; } = true;
+        public bool EdgeToEdgeForRootPages { get; set; } = true;
+        public bool EdgeToEdgeForModalPages { get; set; } = true;
+        public bool EdgeToEdgeStartContentBelowBar { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a boolean that indicates whether the system bars have dark icons when a modal page is open in light mode.

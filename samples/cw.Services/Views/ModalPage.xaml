@@ -4,13 +4,13 @@
              xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
              x:DataType="vm:ModalViewModel"
              x:Class="MauiExtensions.Demo.Views.ModalPage"
-             Title="Modal page"             
+             Title="Modal page"
              Background="{AppThemeBinding Light={StaticResource PageGradient}, Dark={StaticResource PageBackgroundDark}}">
   <VerticalStackLayout Spacing="25">
     <VerticalStackLayout.Padding>
       <OnPlatform x:TypeArguments="Thickness" Default="18,6,18,0">
         <On Platform="iOS" Value="18,0,18,0" />
-        <On Platform="Android" Value="18,48,18,0" />
+        <On Platform="Android" Value="18,0,18,0" />
       </OnPlatform>
     </VerticalStackLayout.Padding>
     <Button Text="X"

@@ -72,7 +72,7 @@ public class ContentDialog<TResult> : ContentPage
         this.Disappearing += OnPageDisappearing;
         _tcs = new TaskCompletionSource<TResult>();
 
-        await PagePresentationService.Instance.OpenModalPageAsync(this);
+        await ViewPresenter.Instance.OpenModalPageAsync(this);
 
         return await _tcs.Task;
     }
@@ -90,7 +90,7 @@ public class ContentDialog<TResult> : ContentPage
     protected async Task CloseWithResultAsync(TResult result)
     {
         _closedWithResult = result;
-        await PagePresentationService.Instance.CloseModalPageAsync();
+        await ViewPresenter.Instance.CloseModalPageAsync();
     }
 
     private async void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)

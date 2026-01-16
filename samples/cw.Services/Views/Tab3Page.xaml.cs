@@ -13,7 +13,7 @@ namespace cw.MauiExtensions.Services.Demo.Views
         private async void OnCloseButtonClicked(object sender, EventArgs e)
         {
             // Open the main page again
-            var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
+            var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
         }
     }
 }

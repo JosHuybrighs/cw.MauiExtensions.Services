@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Demo.ViewModels
 {
-    public partial class MyPopupViewModel : ObservableObject, IPageLifecycleAware, IAutoDisposableOnPageClosed
+    public partial class MyPopupViewModel : ObservableObject, IPageLifecycleAware, IDisposableOnPageClosed
     {
         [ObservableProperty]
         bool _isChecked = false;

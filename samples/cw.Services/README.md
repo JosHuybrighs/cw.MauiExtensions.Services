@@ -26,7 +26,7 @@ This demo app illustrates how to use the cw.MauiExtensions.Services library to:
 
 ### 3. **ViewModel Lifecycle Management**
 - **IPageLifecycleAware**: Automatic notifications when pages appear/disappear
-- **IAutoDisposableOnPageClosed**: Automatic cleanup when pages are removed
+- **IDisposableOnPageClosed**: Automatic cleanup when pages are removed
 - **Page Removal Events**: Subscribe to page removal notifications
 
 ### 4. **Platform-Specific Styling**
@@ -99,7 +99,7 @@ The main page provides buttons to demonstrate each feature:
 Opens a standard navigation page that:
 - Pushes onto the navigation stack
 - Shows back button in navigation bar
-- Implements `IPageLifecycleAware` and `IAutoDisposableOnPageClosed`
+- Implements `IPageLifecycleAware` and `IDisposableOnPageClosed`
 - Demonstrates ViewModel lifecycle logging
 
 **Code Reference**: `NonModalViewModel.cs`
@@ -182,7 +182,7 @@ public class HomeViewModel : ObservableObject, IPageLifecycleAware
 ```csharp
 public class NonModalViewModel : ObservableObject, 
     IPageLifecycleAware, 
-    IAutoDisposableOnPageClosed
+    IDisposableOnPageClosed
 {
     public void OnNavigatedTo()
     {
@@ -206,12 +206,12 @@ public class NonModalViewModel : ObservableObject,
 ```csharp
 public partial class ModalViewModel : ObservableObject, 
     IPageLifecycleAware, 
-    IAutoDisposableOnPageClosed
+    IDisposableOnPageClosed
 {
     [RelayCommand]
     async Task CloseModal()
     {
-        await PagePresentationService.Instance.CloseModalPageAsync();
+        await ViewPresenter.Instance.CloseModalPageAsync();
     }
 
     public void OnNavigatedTo() { /* ... */ }
@@ -232,7 +232,7 @@ public partial class App : Application
         InitializeComponent();
         
         // Subscribe to PageRemoved event
-        PagePresentationService.Instance.PageRemoved += OnPageRemoved;
+        ViewPresenter.Instance.PageRemoved += OnPageRemoved;
     }
 
     private void OnPageRemoved(object? sender, PageRemovedEventArgs e)
@@ -312,7 +312,7 @@ The demo app defines color resources that the library uses for system bar stylin
 </Style>
 ```
 
-**⚠️ Windows Platform Note**: The `IconColor` property (which controls the back button icon color) can ONLY be set via XAML styles in .NET MAUI. It is not available as a settable property in code-behind. The library's `PagePresentationService` sets `BarBackgroundColor` and `BarTextColor` programmatically, but you must define the `NavigationPage` style in your `Styles.xaml` to control icon colors.
+**⚠️ Windows Platform Note**: The `IconColor` property (which controls the back button icon color) can ONLY be set via XAML styles in .NET MAUI. It is not available as a settable property in code-behind. The library's `ViewPresenter` sets `BarBackgroundColor` and `BarTextColor` programmatically, but you must define the `NavigationPage` style in your `Styles.xaml` to control icon colors.
 
 ## Testing the Demo
 
@@ -361,15 +361,15 @@ Watch the Debug Output window for lifecycle events:
 1. **Lifecycle not firing**: Ensure ViewModel implements the interface
 2. **Dispose not called**: Verify page is actually removed (not just hidden)
 3. **System bars wrong color**: Check color resource definitions
-4. **Navigation issues**: Verify PagePresentationService usage
+4. **Navigation issues**: Verify ViewPresenter usage
 5. **Windows back button not visible**: Check `IconColor` in `NavigationPage` style in `Styles.xaml`
 
 ## Key Takeaways
 
 ### ✅ Do's
 - ✅ Implement `IPageLifecycleAware` for pages that need lifecycle events
-- ✅ Implement `IAutoDisposableOnPageClosed` to clean up resources
-- ✅ Use `PagePresentationService` for all navigation
+- ✅ Implement `IDisposableOnPageClosed` to clean up resources
+- ✅ Use `ViewPresenter` for all navigation
 - ✅ Define all required color resources
 - ✅ Set `ModalPageMode.Overlay` for custom overlay dialogs
 - ✅ Subscribe to page removal events when needed
@@ -379,7 +379,7 @@ Watch the Debug Output window for lifecycle events:
 - ❌ Don't forget to dispose timers and event subscriptions
 - ❌ Don't use `await` in `OnNavigatedFrom()` (keep it fast)
 - ❌ Don't manually manage system bar colors (let the library handle it)
-- ❌ Don't mix navigation methods (use PagePresentationService consistently)
+- ❌ Don't mix navigation methods (use ViewPresenter consistently)
 
 ## Platform-Specific Notes
 

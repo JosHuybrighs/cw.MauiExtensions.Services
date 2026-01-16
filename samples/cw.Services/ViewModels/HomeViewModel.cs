@@ -15,14 +15,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         async Task OpenNonModalPage()
         {
             // Navigate to a non-modal page
-            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
+            await ViewPresenter.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
         }
 
         [RelayCommand]
         async Task OpenModalPage()
         {
             // Navigate to modal page on the stack
-            await PagePresentationService.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
+            await ViewPresenter.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
         }
 
         [RelayCommand]
@@ -62,7 +62,7 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         [RelayCommand]
         async Task OpenTabbedPage()
         {
-            var page = PagePresentationService.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
+            var page = ViewPresenter.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
         }
 
 

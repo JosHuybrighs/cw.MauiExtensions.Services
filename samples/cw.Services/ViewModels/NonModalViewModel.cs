@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Demo.ViewModels
 {
-    public partial class NonModalViewModel : ObservableObject, IPageLifecycleAware, IAutoDisposableOnPageClosed
+    public partial class NonModalViewModel : ObservableObject, IPageLifecycleAware, IDisposableOnPageClosed
     {
         int _pageNumber;
 
@@ -20,7 +20,7 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         async Task OpenNonModal()
         {
             // Navigate to non-modal page on the stack
-            await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(_pageNumber + 1));
+            await ViewPresenter.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(_pageNumber + 1));
         }
 
         public NonModalViewModel(int pageNumber)

@@ -1,20 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using cw.MauiExtensions.Services.Core;
-using cw.MauiExtensions.Services.Demo.Views;
 using cw.MauiExtensions.Services.Interfaces;
-using MauiExtensions.Demo.Views;
 using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Demo.ViewModels
 {
-    public partial class ModalViewModel : ObservableObject, IPageLifecycleAware, IAutoDisposableOnPageClosed
+    public partial class ModalViewModel : ObservableObject, IPageLifecycleAware, IDisposableOnPageClosed
     {
         [RelayCommand]
         async Task CloseModal()
         {
             // Close the modal page
-            await PagePresentationService.Instance.CloseModalPageAsync();
+            await ViewPresenter.Instance.CloseModalPageAsync();
         }
 
         public ModalViewModel()

@@ -4,25 +4,27 @@ A reusable .NET MAUI library providing page presentation services (standalone pa
 ViewModel lifecycle management, and customizable system bar (status bar and navigation bar) handling for Android, Windows.
 ### Features
 
-This library provides:
-- **PagePresentationService**: Can create any type of start page, push and pop non-modal pages, and modal pages
-- **ViewModel Lifecycle Management**: Automatic lifecycle event notifications and disposal
-- **ContentDialog**: Overlay-style modal dialogs (popups) with semi-transparent backgrounds as the base for your own custom dialogs
-- **AlertDialog**: A standard alert/confirmation dialog with title, message, and buttons
-- **Smart System Bar Handling**: Automatically configures status and navigation bar colors
-- **Page Removal Events**: Subscribe to page removal notifications via events 
+This library offers:
+- **ViewPresenter**: You can create any type of page: a start page with or without a navigation stack, a page to be
+pushed on the stack, a page replacing the start page, and modal pages/popups. 
+- **ViewModel Lifecycle Management**: Hook your viewmodels to lifecycle events and disposal requests.
+- **ContentDialog**: A overlay-style modal dialog (popup) with semi-transparent backgrounds as the base for your own custom dialogs
+- **AlertDialog**: A simple alert/confirmation dialog with only a title, a message, and up to 2 buttons.
+- **Smart System Bar Handling**: Automatically configure status and navigation bar colors accross all Android API versions.
+- **Page Removal Events**: Subscribe to page removal notifications wherever you want. 
 
 ---
-# The PagePresentationService
+# The ViewPresenter
 
-The purpose of the `PagePresentationService` is to be a replacement for AppShell and get rid of some questionable features of `AppShell`, in particular:
+The purpose of the `ViewPresenter` is to be a replacement for `AppShell` and get rid of some questionable features of `AppShell`,
+in particular:
 - URL-based routing which uses web-style navigation where apps are typically state-driven.
 - Shell hides too much behavior behind implicit magic: page instantiation, parameter injection, ..
 - Dependency Injection is awkward and fragile with Shell.
 - Shell enforces UI structure too early.
 - Shell doesn't scale well.
 
-`PagePresentationService` offers the following methods for opening pages:
+You can open and close pages by using the following methods of the `ViewPresenter` singleton instance:
 
 ### Method 1: `OpenMainPage(Type viewType, object? viewModel)`
 
@@ -38,7 +40,7 @@ Example:
 ```csharp
 protected override Window CreateWindow(IActivationState? activationState)
 {
-    var page = PagePresentationService.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
+    var page = ViewPresenter.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
     return new Window(page);
 }
 ```
@@ -65,7 +67,7 @@ Example:
 ```csharp
 protected override Window CreateWindow(IActivationState? activationState)
 {
-    var page = PagePresentationService.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new ViewModels.HomeViewModel());
+    var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new ViewModels.HomeViewModel());
     return new Window(page);
 }
 ```
@@ -93,7 +95,7 @@ public partial class HomeViewModel : ObservableObject, IPageLifecycleAware
     async Task OpenNonModalPage()
     {
         // Navigate to a non-modal page
-        await PagePresentationService.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
+        await ViewPresenter.Instance.PushPageAsync(typeof(NonModalPage), new NonModalViewModel(pageNumber: 1));
     }
     ...
 }
@@ -111,7 +113,7 @@ async Task Save()
     // Inform listeners
     WeakReferenceMessenger.Default.Send(new LocationConfiguredMessage(new LocationInfoEvent(_isLocA, StorageLoc)));
 
-    await PagePresentationService.Instance.PopPageAsync();
+    await ViewPresenter.Instance.PopPageAsync();
 }
 ```
 
@@ -119,12 +121,10 @@ async Task Save()
 ### Method 5: `OpenModalPageAsync(Page modalPage)`
 
 Displays the specified page as a modal dialog on top of the current page. The method can be called from any
-open page and is put on a modal page's stack supporting multiple modal pages.</br>
-The modal page can be instructed to open in FullScreen or Overlay mode.
-**Note**: The library also comes with a `ContentDialog` popup page class from which you can derive your own popup. It
-expects a `ContentBorder*` style to be available in your app to style the view border in which your content resides.
+open page and is put on the MAUI modal pages stack which supports multiple modal pages.</br>
+The modal page can be instructed to open in FullScreen or Overlay mode.</br>
 
-Example - Full screen modal:
+**Example - Full screen modal**
 
 ```xaml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -161,11 +161,11 @@ public partial class ModalPage : ContentPage
 async Task OpenModalPage()
 {
     // Navigate to modal page on the stack
-    await PagePresentationService.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
+    await ViewPresenter.Instance.OpenModalPageAsync(new ModalPage(new ModalViewModel()));
 }
 ```
 
-Example - Overlay modal:
+**Example - Overlay modal / popup**
 
 ```csharp
 public partial class MyPopupDialog : ContentPage
@@ -183,15 +183,10 @@ public partial class MyPopupDialog : ContentPage
 async Task OpenPopupDialog()
 {
     // Navigate to modal page on the stack
-    await PagePresentationService.Instance.OpenModalPageAsync(new MyPopupDialog());
+    await ViewPresenter.Instance.OpenModalPageAsync(new MyPopupDialog());
 }
 ```
-
-**Note**: Overlay mode can be used for instance to popup a message on the screen. If the popup however serves
-as a means for the user to perform a task (like entering a password, picking a date, ..) you will have to
-open the popup and provide some mechanism (typically a `TaskCompletionSource`) to wait for the user closing the
-page and returning the result.</br>
-The library therefore comes with a `ContentDialog` class that provides all of this.
+**Remark** - See also `ContentDialog` for popups returning a result.
 
 ### Method 6: `CloseModalPageAsync()`
 
@@ -205,7 +200,7 @@ Example:
 async Task CloseModal()
 {
     // Close the modal page
-    await PagePresentationService.Instance.CloseModalPageAsync();
+    await ViewPresenter.Instance.CloseModalPageAsync();
 }
 ```
 
@@ -249,7 +244,7 @@ You can style 2 things in the `AlertDialog`:
 - The style of the 2 buttons. Configure `ResourceKeys.AlertDialogButtonStyle` for this. 
 
 ---
-# Easy popups using `ContentDialog`
+# `ContentDialog` for easy popup dialogs
 
 The library comes with a `ContentDialog` class that you can use as a base class for your own custom popup dialogs.
 It supports: type-safe results, full XAML support, automatic overlay styling, and lifecycle management.
@@ -270,186 +265,114 @@ var result = await dialog.ShowAsync();
 See the [ContentDialog](src/cw.MauiExtensions.Services/docs/ContentDialog.md) documentation for a detailed description.
 
 ---
-# System bars and navigation bar coloring on Android
+# System bars and navigation bar coloring
 
 The latest UI recommendations for mobile apps call for a UI where all page background colors extend to the device's status
-bar, the maui navigation bar (when available) and the system navigation bar (when avalable).</br>
+bar, the maui navigation bar (when available) and the system navigation bar (when available).</br>
 Out of the box MAUI does not provide this functionality on all platforms. Especially on Android support for
-configuring the system bars across all Android versions is limited.
+configuring the system bars across all Android versions is limited.</br>
 
-On Android, the library deals with this in 2 phases of the app lifecycle:
-1. When the app starts up or resumes from sleep the library configures the system bars once. The system
-bars stay as set when a pages replaces the current or is pushed on the stack.
-2. When a modal page is opened the library will always configure the system bars because modal pages use a
-different dialog fragment.
+How does the library help you with this?
 
-## 1. App starts up or resumes from sleep
+## 1. iOS
 
-The way how the library sets the color and tint of the system bars depends on whether the app uses a navigation stack or not.
+On iOS 13+ the color of the status bar is transparant. This has the following advantages:
+- On a page with a MAUI navigation stack the MAUI navigation bar is drawn as an overlay on top of the system bar with a 
+vertical offset, so true edge-to-edge display is possible by assigning the same background color to the navigation bar and page
+background.
+- On a page that doesn't use the MAUI navigation stack and on modal pages (full screen or overlay) the background color of
+the page extends to the bar. Depending on the value of `IgnoreSafeArea` (typically set as a property of the root container
+of a page) the page content starts below or at the top of the bar. So it is possible to achieve true edge-to-edge display.
 
-### 1.1 App opens a page on the MAUI navigation stack
-Pre-condition: `AppHasNavigationBar = true` (the default) and `UseSmartSystemBarColoring = true` (the default).</br>
-Note: if `UseSmartSystemBarColoring` is set to false the library will not set any colors on the system bars.
+**Summary** - With iOS the library doesn't need to do anything special to achieve edge-to-edge display.
 
-**Edge to edge** - Real edge to edge display is not possible on Android when a page is the root page of the navigation stack
-or is pushed on the stack. The reason for this is that there is a navigation bar which occupies space at the top of the screen.
-The option `EnableEdgeToEdge` is therefore ignored. You can however mimic edge to edge by assigning the same background color
-to all relevant elements. Do that on the following 2 places:
-- When the option `UseSmartSystemBarColoring` is set to true (the default) the library will color the Android system bars
-with the color referenced by `SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). When the
-option is set to false then the library will not set the background color.
-- When you create/open the main page using `PagePresentationService.OpenMainNavigationPage` then both the background color and the
-text color of the MAUI navigation bar is set to the colors referenced by `NavigationBarBackgroundColor` or `NavigationBarBackgroundDarkColor`
+
+## 2. Windows
+
+On Windows all pages start below the title bar and therefore true edge-to-edge display is not possible unless you create a
+`TitleBar` control for the window and style it to match the background color with the page background and, if available,
+assign the same color to the MAUI navigation bar.</br>
+
+The `TitleBar` is created as follows:
+
+
+The `TitleBar` control is ignored when the app is running on Android or iOS.
+
+**Remark** - Modal pages (full screen and overlay) also start below the title bar. When a page has a semi-transparant
+background color then the previous page will shine through and typically will be dimmed. The title bar however will stay
+untouched.
+
+**Summary** - With Windows the library doesn't need to do anything special to achieve edge-to-edge display, provided you
+configure a custom `TitleBar`.
+
+
+## 3. Android
+
+To achieve a true edge-to-edge layout on Android the library comes with a number of configuration options. The 2 most
+important are: `UseSmartSystemBarColoring` and `UseSmartSystemBarColoringWithModals`.  Both are true by default. If you
+set them to false then the library will not do anything special and the system bars (status bar at the top and navigation
+bar at the bottom) will stay as configured by the OS or by other libraries such as CommunityToolkit.Maui.
+
+The next thing to consider is whether you want edge-to-edge for root pages and/or for modal pages.
+
+### 3.1 Root pages
+
+`EdgeToEdgeForRootPages` - This option indicates whether at the start of the app (and when the theme changes) the
+library must extend the page content under the system bars or not.</br>
+- If **true** (the default) the library will configure the system not to adjust the view to fit inside the "safe areas" and remove the
+behavior to draw a solid color behind the bars. This works well for all type of pages except for a TabbedPage when the tab buttons are
+at the bottom.</br>
+Per default there will be a offset for the page content in order to start below the status bar. If you don't want that you must set
+the option `EdgeToEdgeStartContentBelowBar` to false.
+- If **false** the library will explicitly color the systems bars with the color referenced by
+`SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). No change is done on the insets
+and therefore the page starts below the status bar.</br>
+This is what you must use when the root page is a TabbedPage with the tab buttons at the bottom.
+
+In both cases the library also sets the tint of the icons of the system bars to light or dark by looking at the brightness
+of `SystemBarsBackgroundColor` or `SystemBarsBackgroundDarkColor`.
+
+#### Required resource settings for any type of page
+
+The library retrieves the color of the system bar from `Application.Current.Resources`, i.e. from `Colors.xaml`. The resource keys
+can be changed in `SystemBarsBackgroundColor` and `SystemBarsBackgroundDarkColor` but if you want to use the default keys you
+need a definition for:
+- "SystemBarsBackground" and
+- "SystemBarsBackgroundDark"
+
+#### Required resource settings for a MAUI NavigationPage
+
+When the root page is a MAUI NavigationPage and you want to have a edge-to-edge background color then you must also configure the
+navigation bar and page background colors to match the system bar colors. This can be easily done by opening the
+main page using `ViewPresenter.OpenMainNavigationPage`. This method automatically sets both the background color and the
+text color of the MAUI navigation bar to the color referenced by `NavigationBarBackgroundColor` or `NavigationBarBackgroundDarkColor`
 and `NavigationBarTextColor` or `NavigationBarTextDarkColor`.
 
-You must specify resource keys (i.e. in `Colors.xaml`) for all of the above color definitions:
-The default expected resource keys, which you can change if you want, are:
-- "SystemBarsBackground" and "SystemBarsBackgroundDark",
-- "NavigationBarBackground" and "NavigationBarBackgroundDark".
-- "NavigationBarText" and "NavigationBarTextDark".
+If you are OK with with the default expected resource keys then you must configure the following keys in `Colors.xaml`:
+- "SystemBarsBackground" and "SystemBarsBackgroundDark"
+- "NavigationBarBackground" and "NavigationBarBackgroundDark"
+- "NavigationBarText" and "NavigationBarTextDark"
 
-For all of your pages make then also sure to set the page background color to the same color. It is advised to define for this
-the resource keys "PageBackground" and "PageBackgroundDark" because those are also expected to be defined when you open modal pages.
+### 3.2 Modal and Popup pages
 
-A typical page definition would look like this:
+`EdgeToEdgeForModalPages` - This option indicates whether the library must extend the modal page content under the
+system bars or not.</br>
+- If **true** (the default) the library will configure the page to extend beneath the system bars. This is the best option for
+a edge-to-edge layout with a single background color on the whole screen.</br>
+Per default there will be a offset for the page content in order to start below the status bar. If you don't want that you must set
+the option `EdgeToEdgeStartContentBelowBar` to false.
 
-```csharp
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="cw.MauiExtensions.Services.Demo.Views.NonModalPage"
-             Title="NonModalPage"
-             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
-    <VerticalStackLayout Padding="18">
-        <Label Text="This is a non-modal page on the navigation stack."
-               VerticalOptions="Center" />
-    </VerticalStackLayout>
-</ContentPage>
-```
+- If **false** the library will explicitly color the systems bars with the color referenced by
+`SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). No change is done on the insets
+and therefore the modal page starts below the status bar.</br>
 
-**Different colors** - Of course there is still the possibility to assign different colors for the system bars, navigation bar and page
-backgrounds.
+In both cases the tint of the icons of the system bars is set to light or dark depending on the setting of the configuration
+option `UseDarkSystemBarIconsWithModalPages` or `UseDarkSystemBarIconsWithModalPagesDark`.
 
-### 1.2 App opens a page without using the MAUI navigation stack
-Set `AppHasNavigationBar`to false.
-
-At startup or resume of the app the library will color the Android system bars depending on the setting of `EnableEdgeToEdge`.
-- When `EnableEdgeToEdge` is set to true (the default) the library will extend the page's background color to the system bar's area
-and set the tint of the system bar icons based on the brightness of the color referenced by `SystemBarsBackgroundColor` or
-`SystemBarsBackgroundDarkColor`.
-- When `EnableEdgeToEdge` is set to false the library will explicitly create a overlay color on the status bar and set it to the
-color referenced by `SystemBarsBackgroundColor` or `SystemBarsBackgroundDarkColor`. The tint of the system bar icons is
-calculated based on the brightness of overlay color.
- 
-## 2. Modal Pages (full screen and overlay)
-
-Pre-condition: `UseSmartSystemBarColoringWithModals` is set to true (the default).</br>
-Note: if `UseSmartSystemBarColoringWithModals` is set to false the library will not configure the system bars when a modal page
-is opened. The MAUI framework will then take care of it which will be OK for Android API 35+ but not as expected for lower versions.
-
-- When `EnableEdgeToEdge` is set to true (the default) the library will extend the page's background color to the system bar's area.
-If the page's background color is opaque so will be the bar color; if the color is transparant so will be the bar background color.</br>
-The tint of the system bar icons is defined by the setting of `UseDarkSystemBarIconsWithModalPages` or
-`UseDarkSystemBarIconsWithModalPagesDark`.
-
-- When `EnableEdgeToEdge` is disabled the color of the system bar depends on whether the page is showing in full screen or overlay mode.
-  - In overlay mode the library will blend the color configured in `ResourceKeys.PageBackgroundColor` or
-`ResourceKeys.PageBackgroundDarkColor`, with the color of `ResourceKeys.ContentDialogBackgroundOverlayColor` or
- `ResourceKeys.ContentDialogBackgroundOverlayDarkColor` and use the resulting color for the system bars.
-  - In full screen mode the library will use the color of `ResourceKeys.SystemBarsBackgroundColor` or
-`ResourceKeys.SystemBarsBackgroundDarkColor` for the system bars.
-  - The tint of the system bar icons is not explicitly set. It is assumed that the OS takes care of that.
-
-
-# System bars and navigation bar coloring on iOS
-
-## 1. Non-modal pages
-
-### 1.1 App uses the MAUI navigation stack
-On iOS the MAUI navigation bar is drawn as an overlay on top of the system bar with a vertical offset, so true edge-to-edge display
-is possible by assigning the same background color to the navigation bar and page background.</br>
-A page definition in xaml is typically the same as shown above for Android.
-
-### 1.1 App doesn't uses the MAUI navigation stack
-On iOS 13+ the color of the status bar is transparant and the background color of the page extends to the bar. Depending on the
-value of `IgnoreSafeArea` (typically set as a property of the root container of a page) the page content starts below or at the
-top of the bar. So it is possible to achieve true edge-to-edge display.
-
-## 2. Modal pages (full screen and overlay)
-On iOS the background color configured for the modal page automatically extends to the system bars. If the background
-color is opaque then so will be the color of the system bars; if the color is transparant then the system bar will
-also become dimmed.
-
-
-# System bars and navigation bar coloring on Windows
-
-## 1. Non-modal pages
-
-### 1.1 App uses the MAUI navigation stack
-
-On Windows the MAUI navigation bar is drawn below the title bar, so true edge-to-edge display is not possible. However,
-you can achieve a similar effect by adding a TitleBar control in the window of your app and styling the control to match the
-background color with the navigation bar and page background.</br>
-It is done as follows:
-
-Create the TitleBar control. Example:
-
-The TitleBar control is ignored when the app is running on Android or iOS.
-
-### 1.2 App doesn't uses the MAUI navigation stack
-
-still todo...
-
-## 2. Modal pages (full screen and overlay)
-On Windows the modal page will allways start below the title bar. If the background color is semi-transparant then the
-previous page will shine through be will be dimmed. The title stays untouched.
-
-
-# Configuration options for coloring system bars
-
-```csharp
-.UseMauiExtensionsServices(options =>
-{
-    options.UseSmartSystemBarColoringWithModals = true;
-    options.EnableEdgeToEdge = true;
-    options.AppHasNavigationBar = true;
-    options.UseDarkSystemBarIconsWithModalPages = true;
-    options.UseDarkSystemBarIconsWithModalPagesDark = false;
-    options.ResourceKeys.SystemBarsBackgroundColor = "SystemBarsBackground";
-    options.ResourceKeys.SystemBarsBackgroundDarkColor = "SystemBarsBackgroundDark";
-    options.ResourceKeys.PageBackgroundColor = "PageBackground";
-    options.ResourceKeys.PageBackgroundDarkColor = "PageBackgroundDark";
-    options.ResourceKeys.NavigationBarBackgroundColor = "PageBackground";
-    options.ResourceKeys.NavigationBarBackgroundDarkColor = "PageBackgroundDark";
-    options.ResourceKeys.NavigationBarTextColor = "NavigationBarText";
-    options.ResourceKeys.NavigationBarTextDarkColor = "NavigationBarTextDark";
-    options.ResourceKeys.ContentDialogBackgroundOverlayColor = "ContentDialogBackgroundOverlay";
-    options.ResourceKeys.ContentDialogBackgroundOverlayDarkColor = "ContentDialogBackgroundOverlayDark";
-})
-```
-
-
-# Things to know in case of Android:
-
-1. **Status Bar Color**: The background color of the Android Status Bar can be configured via resource keys. The tint of the icons
-is automatically calculated based on the background color brightness (dark icons for light backgrounds, light icons for dark backgrounds).
-
-2. **Navigation Bar Color** (Android bottom bar):
-   - API < 35: Color can be controlled via resource keys
-   - API 35+: Color automatically matches the page background
-
-3. **MAUI NavigationBar**: Has its own background color (configurable via resource keys).
-
-4. **Modal Pages and Dialogs**: The library includes a `DialogFragmentService` that correctly handles system bar colors for:
-   - Modal pages (full-screen and overlay modes)
-   - Popup dialogs
-   - Works correctly across all Android API levels (26+)
-
-5. **CommunityToolkit.Maui Comparison**: While CommunityToolkit.Maui offers StatusBarBehavior, it doesn't correctly handle modal
-pages and popups across all Android versions. This library's `DialogFragmentService` provides proper support for all scenarios.
-
-6. **Modal Behavior by API Level**:
-   - API 35+: System bars automatically match page background; status bar icons tint is managed by the library.
-   - API < 35: System bars maintain configured colors; `DialogFragmentService` ensures consistency.
+#### Required resource settings for modal pages
+You must provide a key definition in Colors.xaml for:
+- "SystemBarsBackground" and
+- "SystemBarsBackgroundDark"
 
 ---
 # ViewModel Lifecycle Management
@@ -488,7 +411,7 @@ public class MyViewModel : ObservableObject, IPageLifecycleAware
 - Track page views for analytics
 - Save state when navigating away
 
-## IAutoDisposableOnViewClosed
+## IDisposableOnViewClosed
 
 Automatically dispose resources when the page is removed from navigation:
 
@@ -496,8 +419,8 @@ Automatically dispose resources when the page is removed from navigation:
 using cw.MauiExtensions.Services.Interfaces;
 
 public class MyViewModel : ObservableObject, 
-    IPageLifecycleAware,
-    IAutoDisposableOnViewClosed
+                           IPageLifecycleAware,
+                           IDisposableOnViewClosed
 {
     private Timer? _refreshTimer;
     private bool _isDisposed;
@@ -539,7 +462,7 @@ public class MyViewModel : ObservableObject,
 ```
 Page Created
     ↓
-PagePresentationService hooks lifecycle events
+ViewPresenter hooks lifecycle events
     ↓
 Page.Appearing → IPageLifecycleAware.OnNavigatedTo()
     ↓
@@ -549,7 +472,7 @@ Page.Disappearing → IPageLifecycleAware.OnNavigatedFrom()
     ↓
 Page Removed/Popped
     ↓
-Unhook events → IAutoDisposableOnViewClosed.Dispose()
+Unhook events → IDisposableOnViewClosed.Dispose()
     ↓
 PageRemoved event raised
 ```
@@ -557,12 +480,12 @@ PageRemoved event raised
 ---
 # Page Removal Notifications
 
-The library alse provides a `PageRemoved` event in `PagePresentationService` to get a notification when a page is removed. It is triggered in
+The library alse provides a `PageRemoved` event in `ViewPresenter` to get a notification when a page is removed. It is triggered in
 the following scenarios:
 - A page is popped from the navigation stack.
 - A modal page is closed.
 
-Note: before the event is raised and when the page has a `IAutoDisposableOnPageClosed` viewmodel assigned to its BindingContext, the viewmodel's
+Note: before the event is raised and when the page has a `IDisposableOnPageClosed` viewmodel assigned to its BindingContext, the viewmodel's
 `Dispose` method (if implemented) will be called.
 
 ## WeakReferenceMessenger
@@ -583,7 +506,7 @@ public partial class App : Application
         InitializeComponent();
         
         // Subscribe to page removal events
-        PagePresentationService.Instance.PageRemoved += OnPageRemoved;
+        ViewPresenter.Instance.PageRemoved += OnPageRemoved;
     }
 
     private void OnPageRemoved(object? sender, PageRemovedEventArgs e)
@@ -596,25 +519,26 @@ public partial class App : Application
 }
 ```
 
-An object; e.g. a ViewModel can then subscribe to these events like so:
+An object; e.g. a viewModel can then subscribe to this event like so:
 
 ```csharp
 using CommunityToolkit.Mvvm.Messaging;
 using cw.MauiExtensions.Services.Events;
 
-public class MyViewModel : ObservableObject, IRecipient<PageRemovedEventArgs>
+public class MyViewModel : ObservableObject,
+                           IDisposableOnViewClosed
 {
     public MyViewModel()
     {
-        WeakReferenceMessenger.Default.Register<PageRemovedEventArgs>(this);
+        WeakReferenceMessenger.Default.Register<PageRemovedEventArgs>(this, (r, m) =>
+        {
+           // Do something
+        });
     }
 
-    public void Receive(PageRemovedEventArgs message)
+    public void Dispose()
     {
-        if (message.RemovedPage is Views.DetailPage)
-        {
-            // React to specific page removal
-        }
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 }
 ```
@@ -651,16 +575,12 @@ public static class MauiProgram
 
 ## Required Color Resources
 
-Define these colors in your `App.xaml` or `Colors.xaml`:
+Define these colors in your `App.xaml` or `Colors.xaml` (choose your own colors):
 
 ```xaml
 <!-- System bars (Status bar and Navigation bar on Android) -->
 <Color x:Key="SystemBarsBackground">#FFFFFF</Color>
 <Color x:Key="SystemBarsBackgroundDark">#000000</Color>
-
-<!-- Page backgrounds -->
-<Color x:Key="PageBackground">#FFFFFF</Color>
-<Color x:Key="PageBackgroundDark">#000000</Color>
 
 <!-- MAUI NavigationBar (the bar with back button and title) -->
 <Color x:Key="NavigationBarBackground">#FFFFFF</Color>
@@ -673,10 +593,7 @@ Define these colors in your `App.xaml` or `Colors.xaml`:
 <Color x:Key="ContentDialogBackgroundOverlayDark">#80000000</Color>
 ```
 
-**Note**: When using Edge-to-Edge mode (`EnableEdgeToEdge = true`), these colors still affect modal dialogs and popups, but the
-main page content will draw under the transparent status bar.
-
-### Additional required Colors in the ContentDialogBorder style when AlertDialog is used
+Additional required Colors in the ContentDialogBorder style when AlertDialog is used
 
 ```xaml
 <!-- Dialog border and background colors (optional, for custom styling) -->
@@ -711,169 +628,6 @@ Define these styles in your `Styles.xaml`:
 ```
 
 ---
-# ViewModel Lifecycle Examples
-
-### Example 1: Data Refresh on Page Appear
-
-```csharp
-public class ProductListViewModel : ObservableObject, IPageLifecycleAware
-{
-    private readonly IProductService _productService;
-
-    public ProductListViewModel(IProductService productService)
-    {
-        _productService = productService;
-    }
-
-    public async void OnNavigatedTo()
-    {
-        // Refresh product list every time page appears
-        await LoadProductsAsync();
-    }
-
-    public void OnNavigatedFrom()
-    {
-        // Nothing to do when page disappears
-    }
-}
-```
-
-### Example 2: Timer Management
-
-```csharp
-public class LiveDataViewModel : ObservableObject, 
-    IPageLifecycleAware, 
-    IAutoDisposableOnViewClosed
-{
-    private System.Timers.Timer? _refreshTimer;
-    private bool _isDisposed;
-
-    public void OnNavigatedTo()
-    {
-        // Start refresh timer when page is visible
-        _refreshTimer = new System.Timers.Timer(5000);
-        _refreshTimer.Elapsed += OnRefresh;
-        _refreshTimer.Start();
-    }
-
-    public void OnNavigatedFrom()
-    {
-        // Stop timer when page is not visible
-        _refreshTimer?.Stop();
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed) return;
-        
-        _refreshTimer?.Stop();
-        _refreshTimer?.Dispose();
-        _refreshTimer = null;
-        
-        _isDisposed = true;
-    }
-
-    private void OnRefresh(object? sender, EventArgs e)
-    {
-        // Refresh data
-    }
-}
-```
-
-### Example 3: Event Subscription Management
-
-```csharp
-public class NotificationsViewModel : ObservableObject, 
-    IPageLifecycleAware, 
-    IAutoDisposableOnViewClosed
-{
-    private readonly INotificationService _notificationService;
-    private bool _isDisposed;
-
-    public NotificationsViewModel(INotificationService notificationService)
-    {
-        _notificationService = notificationService;
-    }
-
-    public void OnNavigatedTo()
-    {
-        // Subscribe when page is visible
-        _notificationService.NotificationReceived += OnNotificationReceived;
-    }
-
-    public void OnNavigatedFrom()
-    {
-        // Unsubscribe when page is hidden to save resources
-        _notificationService.NotificationReceived -= OnNotificationReceived;
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed) return;
-        
-        // Ensure cleanup
-        _notificationService.NotificationReceived -= OnNotificationReceived;
-        
-        _isDisposed = true;
-    }
-
-    private void OnNotificationReceived(object? sender, NotificationEventArgs e)
-    {
-        // Handle notification
-    }
-}
-```
-
-### Example 4: Cancellation Token for Async Operations
-
-```csharp
-public class DataViewModel : ObservableObject, 
-    IPageLifecycleAware, 
-    IAutoDisposableOnViewClosed
-{
-    private CancellationTokenSource? _cts;
-    private bool _isDisposed;
-
-    public async void OnNavigatedTo()
-    {
-        _cts = new CancellationTokenSource();
-        await LoadDataAsync(_cts.Token);
-    }
-
-    public void OnNavigatedFrom()
-    {
-        // Cancel ongoing operations when navigating away
-        _cts?.Cancel();
-    }
-
-    public void Dispose()
-    {
-        if (_isDisposed) return;
-        
-        _cts?.Cancel();
-        _cts?.Dispose();
-        _cts = null;
-        
-        _isDisposed = true;
-    }
-
-    private async Task LoadDataAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Long-running operation
-            await Task.Delay(5000, cancellationToken);
-            // Load data...
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected when navigation away happens
-        }
-    }
-}
-```
-
----
 # Configuration
 
 Configure the library in your `MauiProgram.cs` to customize resource keys and behavior:
@@ -893,10 +647,9 @@ public static class MauiProgram
                 // Customize resource key names if you use different names in your app
                 options.ResourceKeys.AlertDialogBorderStyle = "ContentDialogBorder";
                 options.ResourceKeys.AlertDialogButtonStyle = "TextOnlyButton";
+
                 options.ResourceKeys.SystemBarsBackgroundColor = "SystemBarsBackground";
                 options.ResourceKeys.SystemBarsBackgroundDarkColor = "SystemBarsBackgroundDark";
-                options.ResourceKeys.PageBackgroundColor = "PageBackground";
-                options.ResourceKeys.PageBackgroundDarkColor = "PageBackgroundDark";
                 options.ResourceKeys.NavigationBarBackgroundColor = "PageBackground";
                 options.ResourceKeys.NavigationBarBackgroundDarkColor = "PageBackgroundDark";
                 options.ResourceKeys.NavigationBarTextColor = "NavigationBarText";
@@ -904,16 +657,15 @@ public static class MauiProgram
                 options.ResourceKeys.ContentDialogBackgroundOverlayColor = "ContentDialogBackgroundOverlay";
                 options.ResourceKeys.ContentDialogBackgroundOverlayDarkColor = "ContentDialogBackgroundOverlayDark";
                 
-                // Enable/disable system bar styling
                 options.UseSmartSystemBarColoring = true; // Default: true
-                // Enable/disable smart system bar coloring for modals, popups
                 options.UseSmartSystemBarColoringWithModals = true; // Default: true
                 options.UseDarkSystemBarIconsWithModalPages = true; // Default: true
                 options.UseDarkSystemBarIconsWithModalPagesDark = false; // Default: false
                 
                 // Configure edge-to-edge display
-                options.EnableEdgeToEdge = true; // Default: true
-                options.AppHasNavigationBar = true;  // Default: true
+                options.EdgeToEdgeForRootPages = true; // Default: true
+                options.EdgeToEdgeForModalPages = true; // Default: true
+                options.EdgeToEdgeStartContentBelowBar = true;  // Default: true
             })
             .ConfigureFonts(fonts =>
             {
@@ -929,29 +681,23 @@ public static class MauiProgram
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `ResourceKeys.*` | `string` | Various | Customize the resource key names the library looks for |
-| `UseSmartSystemBarColoring` | `bool` | `true` | Enable/disable smart system bar coloring at app startup and resume 0|
-| `UseSmartSystemBarColoringWithModals` | `bool` | `true` | Enable/disable Dialog Fragment Service for modal pages and popups |
-| `EnableEdgeToEdge` | `bool` | `false` | Enable edge-to-edge display (content draws under status bar) |
-| `AppHasNavigationBar` | `bool` | `true` | Set to false if your app does NOT use MAUI NavigationBar |
-
-
-
-## Custom Resource Keys
-
-All resource keys can be customized via the `ResourceKeys` property:
-
-```csharp
-.UseMauiExtensionsServices(options =>
-{
-    // Customize all resource keys to match your app's resource dictionary
-    options.ResourceKeys.SystemBarsBackgroundColor = "MyStatusBarColor";
-    options.ResourceKeys.SystemBarsBackgroundDarkColor = "MyStatusBarColorDark";
-    options.ResourceKeys.PageBackgroundColor = "MyPageBg";
-    options.ResourceKeys.PageBackgroundDarkColor = "MyPageBgDark";
-    // ... etc
-})
-```
+| `ResourceKeys.AlertDialogBorderStyle` | `string` | `"ContentDialogBorder"` | Border style applied to alert dialogs |
+| `ResourceKeys.AlertDialogButtonStyle` | `string` | `"TextOnlyButton"` | Style applied to alert dialog buttons |
+| `ResourceKeys.ContentDialogBackgroundOverlayColor` | `string` | `"ContentDialogBackgroundOverlay"` | Overlay color for content dialogs (light mode) |
+| `ResourceKeys.ContentDialogBackgroundOverlayDarkColor` | `string` | `"ContentDialogBackgroundOverlayDark"` | Overlay color for content dialogs (dark mode) |
+| `ResourceKeys.SystemBarsBackgroundColor` | `string` | `"SystemBarsBackground"` | System bars background color (light mode) |
+| `ResourceKeys.SystemBarsBackgroundDarkColor` | `string` | `"SystemBarsBackgroundDark"` | System bars background color (dark mode) |
+| `ResourceKeys.NavigationBarBackgroundColor` | `string` | `"NavigationBarBackground"` | MAUI NavigationBar background color (light mode) |
+| `ResourceKeys.NavigationBarBackgroundDarkColor` | `string` | `"NavigationBarBackgroundDark"` | MAUI NavigationBar background color (dark mode) |
+| `ResourceKeys.NavigationBarTextColor` | `string` | `"NavigationBarText"` | MAUI NavigationBar text color (light mode) |
+| `ResourceKeys.NavigationBarTextDarkColor` | `string` | `"NavigationBarTextDark"` | MAUI NavigationBar text color (dark mode) |
+| `EdgeToEdgeForRootPages` | `bool` | `true` | Enable edge-to-edge display for root pages |
+| `EdgeToEdgeForModalPages` | `bool` | `true` | Enable edge-to-edge display for modal pages |
+| `EdgeToEdgeStartContentBelowBar` | `bool` | `true` | When edge-to-edge is enabled, add padding to start content below the status bar |
+| `UseDarkSystemBarIconsWithModalPages` | `bool` | `true` | Use dark system bar icons when modal page is open (light mode) |
+| `UseDarkSystemBarIconsWithModalPagesDark` | `bool` | `false` | Use dark system bar icons when modal page is open (dark mode) |
+| `UseSmartSystemBarColoringWithModals` | `bool` | `true` | Enable smart system bar color handling for modal pages and popups |
+| `UseSmartSystemBarColoring` | `bool` | `true` | Enable smart system bar coloring at app startup and on theme changes |
 
 
 ---
@@ -961,47 +707,6 @@ All resource keys can be customized via the `ResourceKeys` property:
 
 If you get a `MissingResourceException`, ensure you have defined all required color resources in your `Colors.xaml` or `App.xaml`.
 The exception message will tell you which resource key is missing.
-
-### Status Bar Icons Not Visible
-
-On Android, if status bar icons are not visible:
-1. Ensure you've called `.UseMauiExtensionsServices()` in your `MauiProgram.cs`
-2. Verify your color resources are defined correctly
-4. The library automatically calculates icon tint based on background brightness - verify your background colors have sufficient contrast
-
-### Modal Pages Not Using Correct Colors
-
-Ensure you've set the `ModalPageMode` on your modal pages if creating custom overlay modals:
-
-```csharp
-ModalPageProperties.SetMode(this, ModalPageMode.Overlay);
-```
-
-**Note**: `ContentDialog` and `AlertDialog` set this automatically.
-
-### OnNavigatedTo/OnNavigatedFrom Not Called
-
-- Ensure your ViewModel implements `IPageLifecycleAware`
-- Verify the ViewModel is set as `BindingContext` before the page is pushed
-- Check that the page is created through `PagePresentationService`
-
-### Dispose Not Called
-
-- Ensure ViewModel implements `IAutoDisposableOnViewClosed`
-- Verify the page is actually being removed (not just hidden)
-- Check that `PagePresentationService` is managing the navigation
-
-### Memory Leaks
-
-If you suspect memory leaks:
-- Implement `IAutoDisposableOnViewClosed` on all ViewModels
-- Always unsubscribe from events in `Dispose()`
-- Cancel CancellationTokenSource in `Dispose()`
-- Dispose timers, HTTP clients, and other IDisposable resources
-
-### Colors Don't Update After Changing Configuration
-
-The resource keys are read when needed. If you change `ResourceKeys` values after app initialization, you may need to restart the app for changes to take effect.
 
 ---
 # License

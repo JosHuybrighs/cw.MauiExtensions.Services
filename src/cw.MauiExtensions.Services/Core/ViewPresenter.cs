@@ -6,17 +6,17 @@ using System.Diagnostics;
 
 namespace cw.MauiExtensions.Services.Core
 {
-    public class PagePresentationService
+    public class ViewPresenter
     {
-        private static volatile PagePresentationService? sInstance;
+        private static volatile ViewPresenter? sInstance;
 
-        public static PagePresentationService Instance
+        public static ViewPresenter Instance
         {
             get
             {
                 if (sInstance == null)
                 {
-                    sInstance = new PagePresentationService();
+                    sInstance = new ViewPresenter();
                 }
                 return sInstance;
             }
@@ -33,7 +33,7 @@ namespace cw.MauiExtensions.Services.Core
         readonly SemaphoreSlim _modalSemaphore = new(1, 1);
 
 
-        PagePresentationService()
+        ViewPresenter()
         {
             if (Application.Current != null)
             {
@@ -315,7 +315,7 @@ namespace cw.MauiExtensions.Services.Core
         /// <summary>
         /// Asynchronously closes the topmost modal page if one is present on the application's main window.
         /// </summary>
-        /// <remarks>If the modal page's binding context implements IAutoDisposableOnPageClosed, it is
+        /// <remarks>If the modal page's binding context implements IDisposableOnPageClosed, it is
         /// disposed before the page is closed. The PageRemoved event is raised after a modal page is successfully
         /// removed. This method is thread-safe and ensures only one modal close operation occurs at a time.</remarks>
         /// <returns>A task that represents the asynchronous close operation. The task completes when the modal page has been
@@ -339,8 +339,8 @@ namespace cw.MauiExtensions.Services.Core
                     // Unhook lifecycle events
                     UnhookPageLifecycleEvents(modalPage);
                     
-                    // Dispose ViewModel if it implements IAutoDisposableOnViewClosed
-                    if (modalPage.BindingContext is IAutoDisposableOnPageClosed disposable)
+                    // Dispose ViewModel if it implements IDisposableOnViewClosed
+                    if (modalPage.BindingContext is IDisposableOnPageClosed disposable)
                     {
                         disposable.Dispose();
                     }
@@ -380,7 +380,7 @@ namespace cw.MauiExtensions.Services.Core
 
                 // Get possible viewmodel and issue Dispose if it supports this
                 var viewModel = page.BindingContext;
-                if (viewModel is IAutoDisposableOnPageClosed disposable)
+                if (viewModel is IDisposableOnPageClosed disposable)
                 {
                     disposable.Dispose();
                 }
