@@ -14,23 +14,19 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
-  
-    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Platforms\Windows\WindowsTitleBarService.cs" />
-    <Compile Remove="Views\ContentDialogOld.xaml.cs" />
-  </ItemGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>cw.MauiExtensions.Services</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Jos Huybrighs</Authors>
+    <Company></Company>
+    <Description>A MAUI library offering page navigation/presentation, viewmodel lifecycle and system bar coloring</Description>
+    <PackageProjectUrl>https://github.com/JosHuybrighs/cw.MauiExtensions.Services</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JosHuybrighs/cw.MauiExtensions.Services</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-  <ItemGroup>
-    <MauiXaml Remove="Views\ContentDialogOld.xaml" />
-  </ItemGroup>
-
-	<!-- Include README in package -->
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
-	</ItemGroup>
+  </PropertyGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\AlertDialog.xaml">
@@ -43,5 +39,4 @@
 	  <Folder Include="Platforms\Windows\" />
 	  <Folder Include="Resources\Styles\" />
 	</ItemGroup>
-
 </Project>
