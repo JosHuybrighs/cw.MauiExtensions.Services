@@ -287,26 +287,7 @@ of a page) the page content starts below or at the top of the bar. So it is poss
 **Summary** - With iOS the library doesn't need to do anything special to achieve edge-to-edge display.
 
 
-## 2. Windows
-
-On Windows all pages start below the title bar and therefore true edge-to-edge display is not possible unless you create a
-`TitleBar` control for the window and style it to match the background color with the page background and, if available,
-assign the same color to the MAUI navigation bar.</br>
-
-The `TitleBar` is created as follows:
-
-
-The `TitleBar` control is ignored when the app is running on Android or iOS.
-
-**Remark** - Modal pages (full screen and overlay) also start below the title bar. When a page has a semi-transparant
-background color then the previous page will shine through and typically will be dimmed. The title bar however will stay
-untouched.
-
-**Summary** - With Windows the library doesn't need to do anything special to achieve edge-to-edge display, provided you
-configure a custom `TitleBar`.
-
-
-## 3. Android
+## 2. Android
 
 To achieve a true edge-to-edge layout on Android the library comes with a number of configuration options. The 2 most
 important are: `UseSmartSystemBarColoring` and `UseSmartSystemBarColoringWithModals`.  Both are true by default. If you
@@ -319,18 +300,23 @@ The next thing to consider is whether you want edge-to-edge for root pages and/o
 
 `EdgeToEdgeForRootPages` - This option indicates whether at the start of the app (and when the theme changes) the
 library must extend the page content under the system bars or not.</br>
-- If **true** (the default) the library will configure the system not to adjust the view to fit inside the "safe areas" and remove the
-behavior to draw a solid color behind the bars. This works well for all type of pages except for a TabbedPage when the tab buttons are
-at the bottom.</br>
+- If **true** (the default for Android API 32+) the library will configure the system not to adjust the view to fit inside the
+"safe areas" and not draw a solid color behind the bars on Android running API 32+. This works well for all type of pages, including
+a `NavigationPage`. Unfortunately it doesn't work as expected when you have a `NavigationPage` and you want the bars to automatically
+update when the app is open and you change the theme.</br>
 Per default there will be a offset for the page content in order to start below the status bar. If you don't want that you must set
 the option `EdgeToEdgeStartContentBelowBar` to false.
-- If **false** the library will explicitly color the systems bars with the color referenced by
-`SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). No change is done on the insets
+- If **false** and when running on Android API < 32, the library will explicitly color the systems bars with the color referenced
+by `SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). No change is done on the insets
 and therefore the page starts below the status bar.</br>
-This is what you must use when the root page is a TabbedPage with the tab buttons at the bottom.
+This is what you must use when your app uses a `NavigationPage` and also when you want the color of the system bars
+to be different from the background of the page.
 
 In both cases the library also sets the tint of the icons of the system bars to light or dark by looking at the brightness
 of `SystemBarsBackgroundColor` or `SystemBarsBackgroundDarkColor`.
+
+**Theme changes** - Unless `UseSmartSystemBarColoring` is set to false the library will automatically react to a theme change
+and re-draw the system bars.
 
 #### Required resource settings for any type of page
 
@@ -357,22 +343,103 @@ If you are OK with with the default expected resource keys then you must configu
 
 `EdgeToEdgeForModalPages` - This option indicates whether the library must extend the modal page content under the
 system bars or not.</br>
-- If **true** (the default) the library will configure the page to extend beneath the system bars. This is the best option for
-a edge-to-edge layout with a single background color on the whole screen.</br>
+- If **true** (the default) the library will configure the page to extend beneath the system bars on Android running API 32+.
+This is the best option for a edge-to-edge layout with a single background color on the whole screen.</br>
 Per default there will be a offset for the page content in order to start below the status bar. If you don't want that you must set
 the option `EdgeToEdgeStartContentBelowBar` to false.
 
-- If **false** the library will explicitly color the systems bars with the color referenced by
+- If **false** , or when the API is lower than 32, the library will explicitly color the systems bars with the color referenced by
 `SystemBarsBackgroundColor` (light mode) and `SystemBarsBackgroundDarkColor` (dark mode). No change is done on the insets
 and therefore the modal page starts below the status bar.</br>
+Use this setting also when you want the color of the system bars to be different from the background of the page.
 
-In both cases the tint of the icons of the system bars is set to light or dark depending on the setting of the configuration
-option `UseDarkSystemBarIconsWithModalPages` or `UseDarkSystemBarIconsWithModalPagesDark`.
+In both cases the tint of the icons of the system bars is determined by the Android system by looking at the brightness of the
+background color.</br>
+
+**Note** - Setting `EdgeToEdgeForModalPages` to true also works well when using CommuniyToolkit.Maui popups across all
+Android versions.
 
 #### Required resource settings for modal pages
 You must provide a key definition in Colors.xaml for:
 - "SystemBarsBackground" and
 - "SystemBarsBackgroundDark"
+
+
+## 3. Windows
+
+On Windows all pages start below the title bar and therefore true edge-to-edge display is not possible unless you create a
+`TitleBar` control for the window and style it to match the background color with the page background and, if available,
+assign the same color to the MAUI navigation bar.</br>
+
+The `TitleBar` is created as follows (example in xaml):
+
+```xaml
+<?xml version="1.0" encoding="utf-8" ?>
+<TitleBar xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
+          Title="Demo App"
+          Subtitle="Welcome to the Demo App"
+          Icon="demoicon.png"
+          HeightRequest="48"
+          BackgroundColor="{AppThemeBinding Light={StaticResource SystemBarsBackground}, Dark={StaticResource SystemBarsBackgroundDark}}"
+          ForegroundColor="{AppThemeBinding Light={StaticResource NavigationBarText}, Dark={StaticResource NavigationBarTextDark}}"
+          x:DataType="vm:DesktopTitleBarViewModel"
+          x:Class="cw.MauiExtensions.Services.Demo.Views.DesktopTitleBar"
+          x:Name="RootTitleBar"> 
+  <TitleBar.Content>
+    <Grid ColumnDefinitions="Auto,*,Auto"
+          Margin="0"
+          Padding="8,0"
+          WidthRequest="400">
+      <Image Grid.Column="0" 
+             Source="info.png"
+             HeightRequest="16" 
+             WidthRequest="16"
+             Margin="0,0,8,0"/>
+      <Grid Grid.Column="1"
+            Background="Transparent">
+        <Label Text="Can't drag here"
+               VerticalOptions="Center"
+               HorizontalOptions="Start"
+               FontSize="12"/>
+      </Grid>
+      <ImageButton Grid.Column="2"
+                   HeightRequest="24"
+                   WidthRequest="24"
+                   BorderWidth="0"
+                   Source="settings.png"
+                   Background="Transparent"
+                   Command="{Binding BindingContext.ShowSettingsCommand, Source={x:Reference RootTitleBar}}"/>
+      </Grid>
+  </TitleBar.Content>
+</TitleBar>
+```
+
+And in App.xaml.cs:
+```csharp
+protected override Window CreateWindow(IActivationState? activationState)
+{
+    var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
+    var titleBar = new DesktopTitleBar(new DesktopTitleBarViewModel());
+    Window window = new Window()
+    {
+        Page = page,
+        TitleBar = titleBar
+    };
+    return window;
+}
+```
+
+The `TitleBar` control is ignored when the app is running on Android or iOS.
+
+**Remark** - Modal pages (full screen and overlay) also start below the title bar. When a page has a semi-transparant
+background color then the previous page will shine through and typically will be dimmed. The title bar however will stay
+untouched.
+
+**Summary** - With Windows the library doesn't need to do anything special to achieve edge-to-edge display, provided you
+configure a custom `TitleBar`.
+
 
 ---
 # ViewModel Lifecycle Management
@@ -391,13 +458,13 @@ using cw.MauiExtensions.Services.Interfaces;
 
 public class MyViewModel : ObservableObject, IPageLifecycleAware
 {
-    public void OnNavigatedTo()
+    public void OnPageCreated()
     {
         // Called when page appears
         // Start timers, refresh data, subscribe to events
     }
 
-    public void OnNavigatedFrom()
+    public void OnPageDestroyed()
     {
         // Called when page disappears
         // Stop timers, pause operations
@@ -425,13 +492,13 @@ public class MyViewModel : ObservableObject,
     private Timer? _refreshTimer;
     private bool _isDisposed;
 
-    public void OnNavigatedTo()
+    public void OnPageCreated()
     {
         _refreshTimer = new Timer(5000);
         _refreshTimer.Start();
     }
 
-    public void OnNavigatedFrom()
+    public void OnPageDestroyed()
     {
         _refreshTimer?.Stop();
     }
@@ -464,23 +531,23 @@ Page Created
     ↓
 ViewPresenter hooks lifecycle events
     ↓
-Page.Appearing → IPageLifecycleAware.OnNavigatedTo()
+Page.Appearing → IPageLifecycleAware.OnPageCreated()
     ↓
 [User interacts with page]
     ↓
-Page.Disappearing → IPageLifecycleAware.OnNavigatedFrom()
+Page.Disappearing → IPageLifecycleAware.OnPageDestroyed()
     ↓
 Page Removed/Popped
     ↓
 Unhook events → IDisposableOnViewClosed.Dispose()
     ↓
-PageRemoved event raised
+PageDestroyed event raised
 ```
 
 ---
-# Page Removal Notifications
+# Page Destroyed Notifications
 
-The library alse provides a `PageRemoved` event in `ViewPresenter` to get a notification when a page is removed. It is triggered in
+The library alse provides a `PageDestroyed` event in `ViewPresenter` to get a notification when a page is removed. It is triggered in
 the following scenarios:
 - A page is popped from the navigation stack.
 - A modal page is closed.
@@ -489,10 +556,10 @@ Note: before the event is raised and when the page has a `IDisposableOnPageClose
 `Dispose` method (if implemented) will be called.
 
 ## WeakReferenceMessenger
-Any object in your app can subscribe to the `PageRemoved` event to get notified when pages are removed.
+Any object in your app can subscribe to the `PageDestroyed` event to get notified when pages are removed.
 If you prefer however a more loosely coupled approach, you can of course also use the CommunityToolkit.Mvvm `WeakReferenceMessenger`
 to broadcast the event to interested objects and/or services.
-Do this by subscribing to the `PageRemoved` event in a centralized location (e.g. App.xaml.cs) and broadcasting the event via the messenger.</br>
+Do this by subscribing to the `PageDestroyed` event in a centralized location (e.g. App.xaml.cs) and broadcasting the event via the messenger.</br>
 Like so:
 
 ```csharp
@@ -506,7 +573,7 @@ public partial class App : Application
         InitializeComponent();
         
         // Subscribe to page removal events
-        ViewPresenter.Instance.PageRemoved += OnPageRemoved;
+        ViewPresenter.Instance.PageDestroyed += OnPageRemoved;
     }
 
     private void OnPageRemoved(object? sender, PageRemovedEventArgs e)
@@ -659,8 +726,6 @@ public static class MauiProgram
                 
                 options.UseSmartSystemBarColoring = true; // Default: true
                 options.UseSmartSystemBarColoringWithModals = true; // Default: true
-                options.UseDarkSystemBarIconsWithModalPages = true; // Default: true
-                options.UseDarkSystemBarIconsWithModalPagesDark = false; // Default: false
                 
                 // Configure edge-to-edge display
                 options.EdgeToEdgeForRootPages = true; // Default: true
@@ -685,19 +750,17 @@ public static class MauiProgram
 | `ResourceKeys.AlertDialogButtonStyle` | `string` | `"TextOnlyButton"` | Style applied to alert dialog buttons |
 | `ResourceKeys.ContentDialogBackgroundOverlayColor` | `string` | `"ContentDialogBackgroundOverlay"` | Overlay color for content dialogs (light mode) |
 | `ResourceKeys.ContentDialogBackgroundOverlayDarkColor` | `string` | `"ContentDialogBackgroundOverlayDark"` | Overlay color for content dialogs (dark mode) |
-| `ResourceKeys.SystemBarsBackgroundColor` | `string` | `"SystemBarsBackground"` | System bars background color (light mode) |
-| `ResourceKeys.SystemBarsBackgroundDarkColor` | `string` | `"SystemBarsBackgroundDark"` | System bars background color (dark mode) |
 | `ResourceKeys.NavigationBarBackgroundColor` | `string` | `"NavigationBarBackground"` | MAUI NavigationBar background color (light mode) |
 | `ResourceKeys.NavigationBarBackgroundDarkColor` | `string` | `"NavigationBarBackgroundDark"` | MAUI NavigationBar background color (dark mode) |
 | `ResourceKeys.NavigationBarTextColor` | `string` | `"NavigationBarText"` | MAUI NavigationBar text color (light mode) |
 | `ResourceKeys.NavigationBarTextDarkColor` | `string` | `"NavigationBarTextDark"` | MAUI NavigationBar text color (dark mode) |
+| `ResourceKeys.SystemBarsBackgroundColor` | `string` | `"SystemBarsBackground"` | System bars background color (light mode) |
+| `ResourceKeys.SystemBarsBackgroundDarkColor` | `string` | `"SystemBarsBackgroundDark"` | System bars background color (dark mode) |
 | `EdgeToEdgeForRootPages` | `bool` | `true` | Enable edge-to-edge display for root pages |
 | `EdgeToEdgeForModalPages` | `bool` | `true` | Enable edge-to-edge display for modal pages |
 | `EdgeToEdgeStartContentBelowBar` | `bool` | `true` | When edge-to-edge is enabled, add padding to start content below the status bar |
-| `UseDarkSystemBarIconsWithModalPages` | `bool` | `true` | Use dark system bar icons when modal page is open (light mode) |
-| `UseDarkSystemBarIconsWithModalPagesDark` | `bool` | `false` | Use dark system bar icons when modal page is open (dark mode) |
-| `UseSmartSystemBarColoringWithModals` | `bool` | `true` | Enable smart system bar color handling for modal pages and popups |
 | `UseSmartSystemBarColoring` | `bool` | `true` | Enable smart system bar coloring at app startup and on theme changes |
+| `UseSmartSystemBarColoringWithModals` | `bool` | `true` | Enable smart system bar color handling for modal pages and popups |
 
 
 ---

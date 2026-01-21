@@ -18,14 +18,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
             Debug.WriteLine("MyPopupViewModel: Dispose - Cleanup");
         }
 
-        public void OnNavigatedTo()
+        public void OnPageCreated()
         {
-            Debug.WriteLine("MyPopupViewModel: OnNavigatedTo - Page is appearing");
+            Debug.WriteLine("MyPopupViewModel: OnPageCreated - Page is appearing");
         }
 
-        public void OnNavigatedFrom()
+        public void OnPageDestroyed()
         {
-            Debug.WriteLine("MyPopupViewModel: OnNavigatedTo - Page is disappearing");
+            Debug.WriteLine("MyPopupViewModel: OnPageCreated - Page is disappearing");
         }
     }
 }

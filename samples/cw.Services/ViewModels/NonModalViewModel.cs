@@ -33,14 +33,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
             Debug.WriteLine("NonModalViewModel: Dispose - Cleanup");
         }
 
-        public void OnNavigatedTo()
+        public void OnPageCreated()
         {
-            Debug.WriteLine("NonModalViewModel: OnNavigatedTo - Page is appearing");
+            Debug.WriteLine("NonModalViewModel: OnPageCreated - Page is appearing");
         }
 
-        public void OnNavigatedFrom()
+        public void OnPageDestroyed()
         {
-            Debug.WriteLine("NonModalViewModel: OnNavigatedFrom - Page is disappearing");
+            Debug.WriteLine("NonModalViewModel: OnPageDestroyed - Page is disappearing");
         }
     }
 }

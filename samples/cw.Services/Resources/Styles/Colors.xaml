@@ -42,8 +42,15 @@
   <LinearGradientBrush x:Key="PageGradient"
                        StartPoint="0,0"
                        EndPoint="0,1">
-    <GradientStop Color="#F0F0F0" Offset="0.0" />
-    <GradientStop Color="#606060" Offset="1.0" />
+    <GradientStop Color="#C0C0C0" Offset="0.0" />
+    <GradientStop Color="#806060" Offset="1.0" />
+  </LinearGradientBrush>
+
+  <LinearGradientBrush x:Key="PageGradientDark"
+                       StartPoint="0,0"
+                       EndPoint="0,1">
+    <GradientStop Color="#404040" Offset="0.0" />
+    <GradientStop Color="#A08080" Offset="1.0" />
   </LinearGradientBrush>
 
 

@@ -20,7 +20,7 @@
 
   <VerticalStackLayout Padding="18"
                        Spacing="25">
-    <Label Text="Demo page to show a non-modal page, a modal page, a content dialog and an alert using MauiExtension.Services. The last button opens a Popup view using the Maui CommunityToolkit."
+    <Label Text="A demo app to show a NavigationPage (this page), a normal page on the stack, a full screen modal page, a Popup view using the library's content dialog, an alert, a Popup view using the Maui CommunityToolkit, and a TabbedPage."
            FontSize="Medium"
            LineBreakMode="WordWrap"/>
     <Button Text="Push page on stack"

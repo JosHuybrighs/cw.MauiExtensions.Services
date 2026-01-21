@@ -2,7 +2,6 @@
 <TitleBar xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           xmlns:vm="clr-namespace:cw.MauiExtensions.Services.Demo.ViewModels"
-          x:Class="cw.MauiExtensions.Services.Demo.Views.DesktopTitleBar"
           Title="Demo App"
           Subtitle="Welcome to the Demo App"
           Icon="demoicon.png"
@@ -10,6 +9,7 @@
           BackgroundColor="{AppThemeBinding Light={StaticResource SystemBarsBackground}, Dark={StaticResource SystemBarsBackgroundDark}}"
           ForegroundColor="{AppThemeBinding Light={StaticResource NavigationBarText}, Dark={StaticResource NavigationBarTextDark}}"
           x:DataType="vm:DesktopTitleBarViewModel"
+          x:Class="cw.MauiExtensions.Services.Demo.Views.DesktopTitleBar"
           x:Name="RootTitleBar"> 
   <TitleBar.Content>
     <Grid ColumnDefinitions="Auto,*,Auto"

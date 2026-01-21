@@ -14,16 +14,16 @@ namespace cw.MauiExtensions.Services.Demo
         {
             InitializeComponent();
             
-            // Subscribe to PageRemoved event
-            ViewPresenter.Instance.PageRemoved += OnPageRemoved;
+            // Subscribe to PageDestroyed event
+            ViewPresenter.Instance.PageDestroyed += OnPageRemoved;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
             // return new Window(new AppShell());
             //var page = ViewPresenter.Instance.OpenMainPage(typeof(ModalPage), new ModalViewModel());
-            var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(Views.HomePage), new HomeViewModel());
-            //var page = ViewPresenter.Instance.OpenMainPage(typeof(Views.DemoTabbedPage), null);
+            //var page = ViewPresenter.Instance.OpenMainPage(typeof(DemoTabbedPage), null);
+            var page = ViewPresenter.Instance.OpenMainNavigationPage(typeof(HomePage), new HomeViewModel());
             var titleBar = new DesktopTitleBar(new DesktopTitleBarViewModel());
             Window window = new Window()
             {

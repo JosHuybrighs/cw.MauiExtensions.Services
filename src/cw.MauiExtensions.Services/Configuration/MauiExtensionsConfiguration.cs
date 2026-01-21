@@ -68,6 +68,20 @@ namespace cw.MauiExtensions.Services.Configuration
         /// </summary>
         /// <remarks>The default expected key is "NavigationBarTextDark".</remarks>
         public string NavigationBarTextDarkColor { get; set; } = "NavigationBarTextDark";
+
+        /// <summary>
+        /// Gets or sets the background color of modal pages in light mode. Used for blending with
+        /// ContentDialogBackgroundOverlayColor when a popup is shown.
+        /// </summary>
+        /// <remarks>The default expected key is "PageBackground".</remarks>
+        public string PageBackgroundColor { get; set; } = "PageBackground";
+
+        /// <summary>
+        /// Gets or sets the background color of modal pages in dark mode. Used for blending with
+        /// ContentDialogBackgroundOverlayDarkColor when a popup is shown.
+        /// </summary>
+        /// <remarks>The default expected key is "PageBackgroundDark".</remarks>
+        public string PageBackgroundDarkColor { get; set; } = "PageBackgroundDark";
     }
 
 
@@ -82,6 +96,7 @@ namespace cw.MauiExtensions.Services.Configuration
         public bool EdgeToEdgeForModalPages { get; set; } = true;
         public bool EdgeToEdgeStartContentBelowBar { get; set; } = true;
 
+        /*
         /// <summary>
         /// Gets or sets a boolean that indicates whether the system bars have dark icons when a modal page is open in light mode.
         /// </summary>
@@ -93,7 +108,7 @@ namespace cw.MauiExtensions.Services.Configuration
         /// </summary>
         /// <remarks>The default is false.</remarks>
         public bool UseDarkSystemBarIconsWithModalPagesDark { get; set; } = false;
-
+        */
 
 
         /// <summary>

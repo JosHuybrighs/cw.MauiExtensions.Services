@@ -1,5 +1,9 @@
 using cw.MauiExtensions.Services.Configuration;
+using cw.MauiExtensions.Services.Core;
 using Microsoft.Maui.LifecycleEvents;
+#if IOS
+using MapKit;
+#endif
 #if WINDOWS
 using Microsoft.UI;
 #endif
@@ -35,6 +39,7 @@ namespace cw.MauiExtensions.Services.Extensions
             configure?.Invoke(config);
             MauiExtensionsConfiguration.Instance = config;
 
+            // Android-only services and lifecycle events
 #if ANDROID
             if (MauiExtensionsConfiguration.Instance.UseSmartSystemBarColoringWithModals)
             {
@@ -42,8 +47,10 @@ namespace cw.MauiExtensions.Services.Extensions
                 // bar and navigation bar colors with modal pages for any API starting with API 26.
                 builder.Services.AddSingleton<IDialogFragmentService, DialogFragmentService>();
             }
+#endif
             builder.ConfigureLifecycleEvents(events =>
             {
+#if ANDROID
                 events.AddAndroid(android => android
                     .OnCreate((activity, bundle) =>
                     {
@@ -68,35 +75,49 @@ namespace cw.MauiExtensions.Services.Extensions
                     })
                     .OnResume((activity) =>
                     {
+                        // Register theme-change service
+                        ThemeService.Instance.Run();
                         if (MauiExtensionsConfiguration.Instance.UseSmartSystemBarColoring)
                         {
                             // Set system bars color when the activity starts and resumes
                             SystemBarsService.SetSystemBarsColor(activity);
                         }
-                    })); 
-            });
+                    }));
 #endif
-
-#if WINDOWS
-            // Not used currrently but keep it here for future modifications.
-            builder.ConfigureLifecycleEvents(events =>
-            {
-                events.AddWindows(windows => windows.OnWindowCreated(window =>
+#if IOS
+                events.AddiOS(ios =>
                 {
-                    var mauiWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
-                    if (mauiWindow != null)
+                    ios.FinishedLaunching((app, options) =>
                     {
-                        // Get the appWindow for the current window
-                        var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-                        var windowId = Win32Interop.GetWindowIdFromWindow(handle);
-                        var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-                        if (appWindow != null)
-                        {
-                        }
-                    }
-                }));
-            });
+                        ThemeService.Instance.Run();
+                        return true;
+                    });
+                });
 #endif
+#if WINDOWS
+                events.AddWindows(windows =>
+                {
+                    windows.OnLaunched((app, args) =>
+                    {
+                        ThemeService.Instance.Run();
+                    });
+                    windows.OnWindowCreated(window =>
+                    {
+                        var mauiWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+                        if (mauiWindow != null)
+                        {
+                            // Get the appWindow for the current window
+                            var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+                            var windowId = Win32Interop.GetWindowIdFromWindow(handle);
+                            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+                            if (appWindow != null)
+                            {
+                            }
+                        }
+                    });
+                });
+#endif
+            });
             return builder;
         }
     }

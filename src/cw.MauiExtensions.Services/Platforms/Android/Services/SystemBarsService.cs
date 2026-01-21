@@ -26,26 +26,8 @@ namespace cw.MauiExtensions.Services.Platforms.Services
         }
     }
 
-    /*
-    public static class MauiActivityExtensions
-    {
-        public static Android.Widget.Toolbar? GetToolbar(this Microsoft.Maui.Controls.Page page)
-        {
-            var handler = page.Handler as Microsoft.Maui.Handlers.PageHandler;
-            if (handler == null)
-                return null;
-
-            var platformView = handler.PlatformView;
-            return platformView?.FindViewById<Android.Widget.Toolbar>(platformView.Context.Resources.GetIdentifier("toolbar", "id", platformView.Context.PackageName));
-        }
-    }
-    */
-
     public class SystemBarsService
     {
-        //static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
-
-
         public static void SetSystemBarsColor(Activity activity)
         {
             var window = activity.Window ?? throw new InvalidOperationException($"{nameof(activity.Window)} cannot be null");
@@ -58,12 +40,15 @@ namespace cw.MauiExtensions.Services.Platforms.Services
             bool isLightStatusBar = ShouldUseDarkIcons(mauiSystemBarColor);
 
             var systemBarColor = mauiSystemBarColor.ToPlatform();
-            //window.SetBackgroundDrawable(new Android.Graphics.Drawables.ColorDrawable(systemBarColor));
+            window.SetBackgroundDrawable(new Android.Graphics.Drawables.ColorDrawable(systemBarColor));
 
-            if (MauiExtensionsConfiguration.Instance.EdgeToEdgeForRootPages)
+            if (OperatingSystem.IsAndroidVersionAtLeast(32) &&
+                MauiExtensionsConfiguration.Instance.EdgeToEdgeForRootPages)
             {
                 // Set system bars by extending the page content into the system bars area (edge-to-edge)
-                EnableEdgeToEdge(window, isLightStatusBar, MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
+                EnableEdgeToEdge(window,
+                                 isLightStatusBar ? EdgeEdgeBarsTintMode.IsLightStatusBar : EdgeEdgeBarsTintMode.IsDarkStatusBar,
+                                 MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
                 return;
             }
 
@@ -247,24 +232,37 @@ namespace cw.MauiExtensions.Services.Platforms.Services
         }
 
 
-        public static void EnableEdgeToEdge(Activity activity, bool isLightStatusBar)
+        public enum EdgeEdgeBarsTintMode
+        {
+            LetAndroidDecide,
+            IsLightStatusBar,
+            IsDarkStatusBar
+        }
+
+        public static void EnableEdgeToEdge(Activity activity, EdgeEdgeBarsTintMode barsTintMode)
         {
             if (activity?.Window == null)
                 return;
 
             var window = activity.Window;
 
-            EnableEdgeToEdge(window, isLightStatusBar, MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
+            EnableEdgeToEdge(window, barsTintMode, MauiExtensionsConfiguration.Instance.EdgeToEdgeStartContentBelowBar);
         }
 
-
-        public static void EnableEdgeToEdge(Android.Views.Window window, bool isLightStatusBar, bool addStatusBarOffset)
+        public static void EnableEdgeToEdge(Android.Views.Window window, EdgeEdgeBarsTintMode barsTintMode, bool addStatusBarOffset)
         {
             // Edge-to-edge
             WindowCompat.SetDecorFitsSystemWindows(window, false);
 
-            window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-            window.AddFlags(WindowManagerFlags.LayoutNoLimits);
+            //window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+            //window.AddFlags(WindowManagerFlags.LayoutNoLimits);
+
+            // 2. Ensure the window is allowed to draw its own system bar backgrounds
+            window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+
+            // 3. Set the background to transparent (this allows the Page's white background to show through)
+            window.SetStatusBarColor(Android.Graphics.Color.Transparent);
+            window.SetNavigationBarColor(Android.Graphics.Color.Transparent);
             //window.SetStatusBarColor(Android.Graphics.Color.Transparent);
             //window.SetNavigationBarColor(Android.Graphics.Color.Transparent);
             //window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
@@ -276,11 +274,14 @@ namespace cw.MauiExtensions.Services.Platforms.Services
                 decorView.SetOnApplyWindowInsetsListener(new ResetEdgeToEdgeInsetsListener());
             }
 
-            var controller = WindowCompat.GetInsetsController(window, decorView);
-            if (controller != null)
+            if (barsTintMode != EdgeEdgeBarsTintMode.LetAndroidDecide)
             {
-                controller.AppearanceLightStatusBars = isLightStatusBar;
-                controller.AppearanceLightNavigationBars = isLightStatusBar;
+                var controller = WindowCompat.GetInsetsController(window, decorView);
+                if (controller != null)
+                {
+                    controller.AppearanceLightStatusBars = barsTintMode == EdgeEdgeBarsTintMode.IsLightStatusBar;
+                    controller.AppearanceLightNavigationBars = barsTintMode == EdgeEdgeBarsTintMode.IsLightStatusBar;
+                }
             }
         }
 

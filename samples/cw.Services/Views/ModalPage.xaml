@@ -5,7 +5,7 @@
              x:DataType="vm:ModalViewModel"
              x:Class="MauiExtensions.Demo.Views.ModalPage"
              Title="Modal page"
-             Background="{AppThemeBinding Light={StaticResource PageGradient}, Dark={StaticResource PageBackgroundDark}}">
+             Background="{AppThemeBinding Light={StaticResource PageBackground}, Dark={StaticResource PageBackgroundDark}}">
   <VerticalStackLayout Spacing="25">
     <VerticalStackLayout.Padding>
       <OnPlatform x:TypeArguments="Thickness" Default="18,6,18,0">
@@ -15,9 +15,11 @@
     </VerticalStackLayout.Padding>
     <Button Text="X"
             Command="{Binding CloseModalCommand}"/>
-    <Label Text="This is a modal page width a GradientBrush as background color in light mode."
+    <Button Text="Toggle color"
+            Clicked="OnToggleBttnClicked"/>
+    <Label Text="This is a modal page."
            FontSize="Medium"/>
-    <Label Text="Tap X to close."
+    <Label Text="Tap X to close, tap 'Toggle color' to switch between a solid background color and a gradient color."
            FontSize="Medium"/>
   </VerticalStackLayout>
 </ContentPage>

@@ -1,7 +1,7 @@
 namespace cw.MauiExtensions.Services.Events
 {
     /// <summary>
-    /// Event arguments for the PageRemoved event.
+    /// Event arguments for the PageDestroyed event.
     /// </summary>
     public class PageRemovedEventArgs : EventArgs
     {

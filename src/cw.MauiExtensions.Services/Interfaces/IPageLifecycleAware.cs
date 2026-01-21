@@ -10,12 +10,12 @@ namespace cw.MauiExtensions.Services.Interfaces
         /// Called when the page is navigated to and is about to appear.
         /// This is triggered by the Page.Appearing event.
         /// </summary>
-        void OnNavigatedTo();
+        void OnPageCreated();
 
         /// <summary>
         /// Called when the page is navigated away from and is about to disappear.
         /// This is triggered by the Page.Disappearing event.
         /// </summary>
-        void OnNavigatedFrom();
+        void OnPageDestroyed();
     }
 }

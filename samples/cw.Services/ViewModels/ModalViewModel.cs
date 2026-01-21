@@ -24,14 +24,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
             Debug.WriteLine("ModalViewModel: Dispose - Cleanup");
         }
 
-        public void OnNavigatedTo()
+        public void OnPageCreated()
         {
-            Debug.WriteLine("ModalViewModel: OnNavigatedTo - Page is appearing");
+            Debug.WriteLine("ModalViewModel: OnPageCreated - Page is appearing");
         }
 
-        public void OnNavigatedFrom()
+        public void OnPageDestroyed()
         {
-            Debug.WriteLine("ModalViewModel: OnNavigatedFrom - Page is disappearing");
+            Debug.WriteLine("ModalViewModel: OnPageDestroyed - Page is disappearing");
         }
     }
 }

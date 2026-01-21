@@ -4,6 +4,11 @@ using cw.MauiExtensions.Services.Helpers;
 
 namespace cw.MauiExtensions.Services.Views;
 
+public class NoResult
+{
+    public static readonly NoResult Instance = new NoResult();
+    private NoResult() { }
+}
 
 public class ContentDialog<TResult> : ContentPage
 {
@@ -75,6 +80,11 @@ public class ContentDialog<TResult> : ContentPage
         await ViewPresenter.Instance.OpenModalPageAsync(this);
 
         return await _tcs.Task;
+    }
+
+    public async Task CloseAsync()
+    {
+        await CloseWithResultAsync(default!);
     }
 
 

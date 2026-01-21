@@ -164,13 +164,13 @@ The demo app configures the library in `MauiProgram.cs`:
 ```csharp
 public class HomeViewModel : ObservableObject, IPageLifecycleAware
 {
-    public void OnNavigatedTo()
+    public void OnPageCreated()
     {
         Debug.WriteLine("Page is appearing");
         // Refresh data, start timers, etc.
     }
 
-    public void OnNavigatedFrom()
+    public void OnPageDestroyed()
     {
         Debug.WriteLine("Page is disappearing");
         // Pause operations
@@ -184,12 +184,12 @@ public class NonModalViewModel : ObservableObject,
     IPageLifecycleAware, 
     IDisposableOnPageClosed
 {
-    public void OnNavigatedTo()
+    public void OnPageCreated()
     {
         Debug.WriteLine("Page is appearing");
     }
 
-    public void OnNavigatedFrom()
+    public void OnPageDestroyed()
     {
         Debug.WriteLine("Page is disappearing");
     }
@@ -214,15 +214,15 @@ public partial class ModalViewModel : ObservableObject,
         await ViewPresenter.Instance.CloseModalPageAsync();
     }
 
-    public void OnNavigatedTo() { /* ... */ }
-    public void OnNavigatedFrom() { /* ... */ }
+    public void OnPageCreated() { /* ... */ }
+    public void OnPageDestroyed() { /* ... */ }
     public void Dispose() { /* ... */ }
 }
 ```
 
-## Page Removal Event Handling
+## PageDestroyed Event Handling
 
-The demo app subscribes to page removal events in `App.xaml.cs`:
+The demo app subscribes to page destroyed events in `App.xaml.cs`:
 
 ```csharp
 public partial class App : Application
@@ -231,8 +231,8 @@ public partial class App : Application
     {
         InitializeComponent();
         
-        // Subscribe to PageRemoved event
-        ViewPresenter.Instance.PageRemoved += OnPageRemoved;
+        // Subscribe to PageDestroyed event
+        ViewPresenter.Instance.PageDestroyed += OnPageRemoved;
     }
 
     private void OnPageRemoved(object? sender, PageRemovedEventArgs e)
@@ -352,10 +352,10 @@ The demo app already has debug logging enabled in `MauiProgram.cs`:
 
 ### Lifecycle Event Logging
 Watch the Debug Output window for lifecycle events:
-- `OnNavigatedTo` - Page is appearing
-- `OnNavigatedFrom` - Page is disappearing
+- `OnPageCreated` - Page is appearing
+- `OnPageDestroyed` - Page is disappearing
 - `Dispose` - Page is being removed and cleaned up
-- `PageRemoved` - Page has been removed from navigation
+- `PageDestroyed` - Page has been removed from navigation
 
 ### Common Debugging Scenarios
 1. **Lifecycle not firing**: Ensure ViewModel implements the interface
@@ -377,7 +377,7 @@ Watch the Debug Output window for lifecycle events:
 
 ### ❌ Don'ts
 - ❌ Don't forget to dispose timers and event subscriptions
-- ❌ Don't use `await` in `OnNavigatedFrom()` (keep it fast)
+- ❌ Don't use `await` in `OnPageDestroyed()` (keep it fast)
 - ❌ Don't manually manage system bar colors (let the library handle it)
 - ❌ Don't mix navigation methods (use ViewPresenter consistently)
 

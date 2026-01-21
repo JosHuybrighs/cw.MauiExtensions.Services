@@ -25,21 +25,17 @@ namespace cw.MauiExtensions.Services.Core
         /// <summary>
         /// Event raised when a page is removed from the navigation stack.
         /// </summary>
-        public event EventHandler<PageRemovedEventArgs>? PageRemoved;
+        public event EventHandler<PageRemovedEventArgs>? PageDestroyed;
 
 
         NavigationPage? _mainNavigationPage;
         Page? _mainPage;
+        Page? _lastNonModalPage;
         readonly SemaphoreSlim _modalSemaphore = new(1, 1);
 
 
         ViewPresenter()
-        {
-            if (Application.Current != null)
-            {
-                Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-            }
-        }
+        {  }
 
         /// <summary>
         /// Creates and returns a new main page instance of the specified type, optionally initialized with the provided
@@ -89,6 +85,7 @@ namespace cw.MauiExtensions.Services.Core
                 Application.Current.Windows[0].Page = _mainPage;
             }
 
+            _lastNonModalPage = _mainPage;
             return _mainPage;
         }
 
@@ -142,7 +139,7 @@ namespace cw.MauiExtensions.Services.Core
             }
             if (pageObject == null)
             {
-                Debug.WriteLine($"AppShellNavigationService.OpenMainPage - Could not create instance of type {viewType.FullName}");
+                Debug.WriteLine($"ViewPresenter.OpenMainPage - Could not create instance of type {viewType.FullName}");
                 throw new InvalidOperationException($"Could not create instance of type {viewType.FullName}");
             }
             // Create a new NavigationPage with the requested page as root
@@ -162,6 +159,8 @@ namespace cw.MauiExtensions.Services.Core
                 // Yes - Set the new page
                 Application.Current.Windows[0].Page = _mainNavigationPage;
             }
+
+            _lastNonModalPage = (Page)pageObject;
             return _mainNavigationPage;
         }
 
@@ -186,7 +185,7 @@ namespace cw.MauiExtensions.Services.Core
             {
                 if (_mainNavigationPage == null)
                 {
-                    Debug.WriteLine("AppShellNavigationService.OnOpenContentPageEvent - NavigationPage is null");
+                    Debug.WriteLine("ViewPresenter.OnOpenContentPageEvent - NavigationPage is null");
                     return;
                 }
                 // Remove possible modal pages.
@@ -206,7 +205,7 @@ namespace cw.MauiExtensions.Services.Core
                 }
                 if (instanceObject == null)
                 {
-                    Debug.WriteLine($"AppShellNavigationService.OnOpenContentPageEvent - Could not create instance of type {viewType.FullName}");
+                    Debug.WriteLine($"ViewPresenter.OnOpenContentPageEvent - Could not create instance of type {viewType.FullName}");
                     return;
                 }
                 Page newPage = (Page)instanceObject;
@@ -239,16 +238,16 @@ namespace cw.MauiExtensions.Services.Core
                             Page poppedPage = await _mainNavigationPage.Navigation.PopAsync();
                         }
                         popCount--;
-                    }
-                }
+                    }               }
                 else
                 {
                     await _mainNavigationPage.Navigation.PushAsync(newPage);
                 }
+                _lastNonModalPage = newPage;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AppShellNavigationService.OnOpenContentPageEvent - Exception {ex.Message}");
+                Debug.WriteLine($"ViewPresenter.OnOpenContentPageEvent - Exception {ex.Message}");
             }
         }
 
@@ -300,7 +299,7 @@ namespace cw.MauiExtensions.Services.Core
         {
             if (_mainNavigationPage == null)
             {
-                Debug.WriteLine("AppShellNavigationService.CloseContentPageAsync - NavigationPage is null");
+                Debug.WriteLine("ViewPresenter.PopPageAsync - NavigationPage is null");
                 return;
             }
             while (nrofPagesToPop-- > 0)
@@ -310,13 +309,14 @@ namespace cw.MauiExtensions.Services.Core
                 // Report popped
                 OnNavigationPagePopped(this, new NavigationEventArgs(pageToRemove));
             }
+            _lastNonModalPage = _mainNavigationPage.Navigation.NavigationStack.LastOrDefault();
         }
 
         /// <summary>
         /// Asynchronously closes the topmost modal page if one is present on the application's main window.
         /// </summary>
         /// <remarks>If the modal page's binding context implements IDisposableOnPageClosed, it is
-        /// disposed before the page is closed. The PageRemoved event is raised after a modal page is successfully
+        /// disposed before the page is closed. The PageDestroyed event is raised after a modal page is successfully
         /// removed. This method is thread-safe and ensures only one modal close operation occurs at a time.</remarks>
         /// <returns>A task that represents the asynchronous close operation. The task completes when the modal page has been
         /// closed or if no modal page was present.</returns>
@@ -347,8 +347,8 @@ namespace cw.MauiExtensions.Services.Core
                     
                     await page.Navigation.PopModalAsync();
                     
-                    // Raise PageRemoved event
-                    PageRemoved?.Invoke(this, new PageRemovedEventArgs(modalPage));
+                    // Raise PageDestroyed event
+                    PageDestroyed?.Invoke(this, new PageRemovedEventArgs(modalPage));
                 }
             }
             finally
@@ -357,6 +357,49 @@ namespace cw.MauiExtensions.Services.Core
             }
         }
 
+
+        public void UpdateNavigationBarColors()
+        {
+            if (_mainNavigationPage != null)
+            {
+                // Set MAUI NavigationPage colors on all platforms
+                bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
+
+                // Try to get toolbar-specific colors first, fall back to navigation bar colors
+                string toolbarBgKey = darkTheme
+                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundDarkColor
+                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundColor;
+
+                string toolbarTextKey = darkTheme
+                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextDarkColor
+                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextColor;
+
+                var backgroundColor = ResourcesHelper.GetColor(toolbarBgKey,
+                                                               darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
+                _mainNavigationPage.BarBackgroundColor = backgroundColor;
+
+                var textColor = ResourcesHelper.GetColor(toolbarTextKey,
+                                                         darkTheme ? Color.FromRgba(255, 255, 255, 255) : Color.FromRgba(0, 0, 0, 255));
+                _mainNavigationPage.BarTextColor = textColor;
+            }
+        }
+
+        public Color GetBackgroundColorOfLastNonModalPage()
+        {
+            if (_lastNonModalPage != null)
+            {
+                Brush? brush = _lastNonModalPage.Background;
+                if (brush is null && _lastNonModalPage.BackgroundColor != null)
+                {
+                    return _lastNonModalPage.BackgroundColor;
+                }
+                if (brush is SolidColorBrush solid)
+                {
+                    return solid.Color;
+                }
+            }
+            return Colors.Transparent;
+        }
 
         private void OnNavigationPagePopped(object? sender, NavigationEventArgs e)
         {
@@ -384,8 +427,8 @@ namespace cw.MauiExtensions.Services.Core
                 {
                     disposable.Dispose();
                 }
-                // Raise PageRemoved event
-                PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
+                // Raise PageDestroyed event
+                PageDestroyed?.Invoke(this, new PageRemovedEventArgs(page));
             }
             //GC.Collect();
         }
@@ -422,7 +465,7 @@ namespace cw.MauiExtensions.Services.Core
         {
             if (sender is Page page && page.BindingContext is IPageLifecycleAware lifecycleAware)
             {
-                lifecycleAware.OnNavigatedTo();
+                lifecycleAware.OnPageCreated();
             }
         }
 
@@ -433,46 +476,9 @@ namespace cw.MauiExtensions.Services.Core
         {
             if (sender is Page page && page.BindingContext is IPageLifecycleAware lifecycleAware)
             {
-                lifecycleAware.OnNavigatedFrom();
+                lifecycleAware.OnPageDestroyed();
             }
         }
 
-        private void UpdateNavigationBarColors()
-        {
-            if (_mainNavigationPage != null)
-            {
-                // Set MAUI NavigationPage colors on all platforms
-                bool darkTheme = Microsoft.Maui.Controls.Application.Current.RequestedTheme == AppTheme.Dark;
-                
-                // Try to get toolbar-specific colors first, fall back to navigation bar colors
-                string toolbarBgKey = darkTheme 
-                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundDarkColor
-                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarBackgroundColor;
-                
-                string toolbarTextKey = darkTheme
-                    ? MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextDarkColor
-                    : MauiExtensionsConfiguration.Instance.ResourceKeys.NavigationBarTextColor;
-                
-                var backgroundColor = ResourcesHelper.GetColor(toolbarBgKey,
-                                                               darkTheme ? Color.FromRgba(0, 0, 0, 255) : Color.FromRgba(255, 255, 255, 255));
-                _mainNavigationPage.BarBackgroundColor = backgroundColor;
-
-                var textColor = ResourcesHelper.GetColor(toolbarTextKey,
-                                                         darkTheme ? Color.FromRgba(255, 255, 255, 255) : Color.FromRgba(0, 0, 0, 255));
-                _mainNavigationPage.BarTextColor = textColor;
-
-#if WINDOWS
-                // Also configure Windows title bar to match
-                // Pass both navigation bar and toolbar colors to Windows service
-                //WindowsTitleBarService.ConfigureTitleBar(_mainNavigationPage);
-#endif
-            }
-        }
-
-
-        void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
-        {
-            UpdateNavigationBarColors();
-        }
     }
 }

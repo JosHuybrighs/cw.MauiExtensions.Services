@@ -66,14 +66,14 @@ namespace cw.MauiExtensions.Services.Demo.ViewModels
         }
 
 
-        public void OnNavigatedTo()
+        public void OnPageCreated()
         {
-            Debug.WriteLine("HomeViewModel: OnNavigatedTo - Page is appearing");
+            Debug.WriteLine("HomeViewModel: OnPageCreated - Page is appearing");
         }
 
-        public void OnNavigatedFrom()
+        public void OnPageDestroyed()
         {
-            Debug.WriteLine("HomeViewModel: OnNavigatedFrom - Page is disappearing");
+            Debug.WriteLine("HomeViewModel: OnPageDestroyed - Page is disappearing");
         }
     }
 }

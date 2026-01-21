@@ -12,7 +12,7 @@ public enum ContentDialogResult
 
 public partial class AlertDialog : ContentDialog<ContentDialogResult>
 {
-    public AlertDialog(string title, string text, string primaryBttnText, string? secondaryBttnText)
+    public AlertDialog(string title, string text, string primaryBttnText, string? secondaryBttnText = null)
     {
         InitializeComponent();
 
@@ -32,7 +32,6 @@ public partial class AlertDialog : ContentDialog<ContentDialogResult>
         {
             this.SecondaryBttn.Text = secondaryBttnText;
         }
-        //PopupBorder.WidthRequest = (DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density) * 9 / 10;
     }
 
     private async void PrimaryBttn_Clicked(Object sender, EventArgs e)
