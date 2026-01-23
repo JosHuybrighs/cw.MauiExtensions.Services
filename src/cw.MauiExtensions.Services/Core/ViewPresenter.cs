@@ -395,7 +395,10 @@ namespace cw.MauiExtensions.Services.Core
                 }
                 if (brush is SolidColorBrush solid)
                 {
-                    return solid.Color;
+                    if (solid.Color != null)
+                    {
+                        return solid.Color;
+                    }
                 }
             }
             return Colors.Transparent;

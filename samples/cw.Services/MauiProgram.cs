@@ -27,7 +27,7 @@ namespace cw.MauiExtensions.Services.Demo
                         //options.ResourceKeys.ContentDialogBackgroundOverlayDarkColor = "ContentDialogBackgroundOverlayDark";
                         //options.UseSmartSystemBarColoring = false;
                         //options.UseSmartSystemBarColoringWithModals = false;
-                        //options.EdgeToEdgeForRootPages = false;
+                        options.EdgeToEdgeForRootPages = false;
                         //options.EdgeToEdgeForModalPages = false;
                         //options.EdgeToEdgeStartContentBelowBar = false;
                     })

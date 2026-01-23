@@ -241,7 +241,15 @@ async Task ShowAlert()
 
 You can style 2 things in the `AlertDialog`:
 - The style of the content border. Configure `ResourceKeys.AlertDialogBorderStyle` for this. 
-- The style of the 2 buttons. Configure `ResourceKeys.AlertDialogButtonStyle` for this. 
+- The style of the 2 buttons. Configure `ResourceKeys.AlertDialogButtonStyle` for this.
+
+To make it even easier to popup an alert dialog , the library also provides a static helper method
+`AlertDialog.ShowAlertAsync(string title, string text, string primaryBttnText, string? secondaryBttnText)`</br>
+Example:
+```csharp
+await Alert.ShowAsync("Error", "You must enter a server address", "OK");
+```
+
 
 ---
 # `ContentDialog` for easy popup dialogs
